@@ -16,4 +16,8 @@ Chapter 6 of the book contains complete implementations of reactive domain model
 The build in this project now contains 2 implementations:
 
 * Implementation of the domain model using cats-effect IO
-* Same domain model based on the [tagless final](http://okmij.org/ftp/tagless-final/index.html) approach, with cats-effect IO as one of the possible concrete implementations. This implementation closely follows the [approach](http://debasishg.blogspot.com/2017/07/domain-models-late-evaluation-buys-you.html) that I discussed in one of the blog posts quite some time back.
+* Same domain model based on the [tagless final](http://okmij.org/ftp/tagless-final/index.html) approach, with the following concrete implementations:
+    * cats-effect IO 
+    * Monix Task 
+
+This implementation of tagless final closely follows the [approach](http://debasishg.blogspot.com/2017/07/domain-models-late-evaluation-buys-you.html) that I discussed in one of the blog posts quite some time back.
