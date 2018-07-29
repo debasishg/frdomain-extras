@@ -1,5 +1,6 @@
 package frdomain.ch6
 package domain
+package monixtask
 package app
 
 import cats._
@@ -7,6 +8,7 @@ import cats.data._
 import cats.implicits._
 import cats.instances.all._
 
+import service.AccountServiceException
 import service.interpreter.{ AccountServiceInterpreter, InterestPostingServiceInterpreter, ReportingServiceInterpreter }
 import repository.interpreter.AccountRepositoryInMemory
 import service.{ Checking, Savings }
@@ -15,15 +17,22 @@ import model.Account
 
 object App {
 
-  import cats.effect.IO
+  import monix.eval.Task
+  import monix.execution.Scheduler.Implicits.global
 
-  val accountServiceIO = new AccountServiceInterpreter[IO]
-  val interestPostingServiceIO = new InterestPostingServiceInterpreter[IO]
-  val reportingServiceIO = new ReportingServiceInterpreter[IO]
+  import scala.concurrent.Await
+  import scala.concurrent.duration.Duration
 
-  import accountServiceIO._
-  import interestPostingServiceIO._
-  import reportingServiceIO._
+  import scala.util.{ Success, Failure }
+ 
+
+  val accountServiceTask = new AccountServiceInterpreter[Task]
+  val interestPostingServiceTask = new InterestPostingServiceInterpreter[Task]
+  val reportingServiceTask = new ReportingServiceInterpreter[Task]
+
+  import accountServiceTask._
+  import interestPostingServiceTask._
+  import reportingServiceTask._
 
   def main(args: Array[String]): Unit = {
     usecase1()
@@ -58,14 +67,18 @@ object App {
   
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
+    val task = y.value
+
+    import monix.eval.Callback
+
+    val _ = task.runAsync(new Callback[Either[AccountServiceException, Seq[(String, Amount)]]] {
+      def onSuccess(value: Either[AccountServiceException, Seq[(String, Amount)]]): Unit = value match {
+        case Left(th) => println(th.message)
+        case Right(vs) => vs.foreach(println)
       }
-    }
-  
+      def onError(ex: Throwable): Unit = ex.printStackTrace
+    })
+
     // (a2345,2000)
     // (a5678,0)
     // (a3456,3000)
@@ -82,13 +95,7 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(Await.result(y.value.runAsync, Duration.Inf))
     // NonEmptyList(No existing account with no a2345)
   }
 
@@ -102,13 +109,7 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(Await.result(y.value.runAsync, Duration.Inf))
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
 
@@ -122,13 +123,8 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(Await.result(y.value.runAsync, Duration.Inf))
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }
 }
+

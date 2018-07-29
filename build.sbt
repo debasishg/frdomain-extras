@@ -22,7 +22,7 @@ lazy val tagless = (project in file("./tagless"))
 
   .settings (
     fork in run := true,
-    mainClass in Compile := Some("frdomain.ch6.domain.app.App"),
+    mainClass in Compile := Some("frdomain.ch6.domain.monixtask.app.App"),
     addCommandAlias("tagless", "tagless/run")
   )
 
