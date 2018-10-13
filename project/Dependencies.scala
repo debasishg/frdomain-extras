@@ -7,6 +7,7 @@ object Dependencies {
   object Cats {
     val cats              = "org.typelevel"                %%   "cats-core"                      % catsVersion
     val catsEffect        = "org.typelevel"                %%   "cats-effect"                    % catsEffectVersion
+    val catsMtl           = "org.typelevel"                %%   "cats-mtl-core"                  % catsMtlVersion
   }
 
   object Monix {

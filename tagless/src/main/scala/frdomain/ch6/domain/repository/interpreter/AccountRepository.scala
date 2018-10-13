@@ -20,12 +20,12 @@ class AccountRepositoryInMemory[M[+_]](implicit me: MonadError[M, Throwable]) ex
   def query(no: String): M[ErrorOr[Option[Account]]] = Right(repo.get(no)).pure[M]
 
   def store(a: Account): M[ErrorOr[Account]] = {
-    val r = repo += ((a.no, a))
+    val _ = repo += ((a.no, a))
     Right(a).pure[M]
   }
 
   def query(openedOn: Date): M[ErrorOr[Seq[Account]]] = {
-    Right(repo.values.filter(_.dateOfOpen == openedOn).toSeq).pure[M]
+    Right(repo.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq).pure[M]
   }
 
   def all: M[ErrorOr[Seq[Account]]] = Right(repo.values.toSeq).pure[M]

@@ -45,8 +45,6 @@ object Account {
   def checkingAccount(no: String, name: String, openDate: Option[Date], closeDate: Option[Date], 
     balance: Balance): ErrorOr[Account] = { 
 
-    val od = openDate.getOrElse(today)
-
     ( 
       validateAccountNo(no),
       validateOpenCloseDate(openDate.getOrElse(today), closeDate)
@@ -58,8 +56,6 @@ object Account {
 
   def savingsAccount(no: String, name: String, rate: BigDecimal, openDate: Option[Date], 
     closeDate: Option[Date], balance: Balance): ErrorOr[Account] = { 
-
-    val od = openDate.getOrElse(today)
 
     (
       validateAccountNo(no),
@@ -82,7 +78,7 @@ object Account {
   }
 
   def close(a: Account, closeDate: Date): ErrorOr[Account] = {
-    (validateAccountAlreadyClosed(a), validateCloseDate(a, closeDate)).mapN {(acc, d) =>
+    (validateAccountAlreadyClosed(a), validateCloseDate(a, closeDate)).mapN {(acc, _) =>
       acc match {
         case c: CheckingAccount => c.copy(dateOfClose = Some(closeDate))
         case s: SavingsAccount  => s.copy(dateOfClose = Some(closeDate))

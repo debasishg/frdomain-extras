@@ -20,12 +20,12 @@ class AccountRepositoryInMemory extends AccountRepository {
   def query(no: String): IO[ErrorOr[Option[Account]]] = IO(Right(repo.get(no)))
 
   def store(a: Account): IO[ErrorOr[Account]] = IO {
-    val r = repo += ((a.no, a))
+    val _ = repo += ((a.no, a))
     Right(a)
   }
 
   def query(openedOn: Date): IO[ErrorOr[Seq[Account]]] = IO {
-    Right(repo.values.filter(_.dateOfOpen == openedOn).toSeq)
+    Right(repo.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq)
   }
 
   def all: IO[ErrorOr[Seq[Account]]] = IO(Right(repo.values.toSeq))

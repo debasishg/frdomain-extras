@@ -21,4 +21,5 @@ project/plugins/project/
 *.json--
 
 *.swp
+*.swo
 .scala_dependencies
