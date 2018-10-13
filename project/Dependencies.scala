@@ -22,4 +22,5 @@ object Dependencies {
 
   val catsIODependencies: Seq[ModuleID] = commonDependencies
   val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(macroParadise, kindProjector) ++ monixDependencies
+  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(macroParadise, kindProjector) ++ monixDependencies
 }
