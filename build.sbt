@@ -26,6 +26,16 @@ lazy val tagless = (project in file("./tagless"))
     addCommandAlias("tagless", "tagless/run")
   )
 
+lazy val mtl = (project in file("./mtl"))
+  .settings(Common.settings: _*)
+  .settings(libraryDependencies ++= Dependencies.catsMtlDependencies)
+
+  .settings (
+    fork in run := true,
+    mainClass in Compile := Some("frdomain.ch6.domain.monixtask.app.App"),
+    addCommandAlias("mtl", "mtl/run")
+  )
+
 lazy val root = (project in file(".")).
-    aggregate(catsio, tagless)
+    aggregate(catsio, tagless, mtl)
 
