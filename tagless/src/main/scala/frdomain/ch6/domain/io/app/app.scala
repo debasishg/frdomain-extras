@@ -57,15 +57,9 @@ object App {
       a <- balanceByAccount
     } yield a
   
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(y.unsafeRunSync.toList)
   
     // (a2345,2000)
     // (a5678,0)
@@ -81,15 +75,9 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(y.unsafeRunSync.toList)
     // NonEmptyList(No existing account with no a2345)
   }
 
@@ -101,15 +89,9 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(y.unsafeRunSync.toList)
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
 
@@ -121,15 +103,9 @@ object App {
       b <- balanceByAccount
     } yield b
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
-    }
+    println(y.unsafeRunSync.toList)
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }
 }

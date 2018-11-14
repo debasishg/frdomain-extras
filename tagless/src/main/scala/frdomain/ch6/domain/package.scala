@@ -17,5 +17,5 @@ package object service {
   //   a. the Left indicates a service level exception
   //   b. the Right indicates the returned value
   // 3. The type is parameterized on the type constructor M[_] which is typically a Monad
-  type AccountOperation[M[_], A] = Kleisli[Valid[M, ?], AccountRepository[M], A]
+  type AccountOperation[M[_], A] = Kleisli[M, AccountRepository[M], A]
 }
