@@ -59,7 +59,12 @@ object App {
   
     val y = c(new AccountRepositoryInMemory[IO])
 
-    println(y.unsafeRunSync.toList)
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
+      case Left(th) => th.printStackTrace
+      case Right(vals) => vals foreach println
+    }
   
     // (a2345,2000)
     // (a5678,0)
@@ -77,7 +82,12 @@ object App {
 
     val y = c(new AccountRepositoryInMemory[IO])
 
-    println(y.unsafeRunSync.toList)
+    // println(y.unsafeRunSync.toList)
+    //
+    y.unsafeRunAsync {
+      case Left(th) => th.printStackTrace
+      case Right(vals) => vals foreach println
+    }
     // NonEmptyList(No existing account with no a2345)
   }
 
@@ -91,7 +101,12 @@ object App {
 
     val y = c(new AccountRepositoryInMemory[IO])
 
-    println(y.unsafeRunSync.toList)
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
+      case Left(th) => th.printStackTrace
+      case Right(vals) => vals foreach println
+    }
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
 
@@ -105,7 +120,12 @@ object App {
 
     val y = c(new AccountRepositoryInMemory[IO])
 
-    println(y.unsafeRunSync.toList)
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
+      case Left(th) => th.printStackTrace
+      case Right(vals) => vals foreach println
+    }
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }
 }

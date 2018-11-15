@@ -18,6 +18,7 @@ import model.Account
 object App {
 
   import monix.eval.Task
+  import monix.eval.Callback
   import monix.execution.Scheduler.Implicits.global
 
   import scala.concurrent.Await
@@ -36,9 +37,9 @@ object App {
 
   def main(args: Array[String]): Unit = {
     usecase1()
-    // usecase2()
-    // usecase3()
-    // usecase4()
+    usecase2()
+    usecase3()
+    usecase4()
   }
 
   def usecase1(): Unit = {
@@ -67,9 +68,6 @@ object App {
   
     val task = c(new AccountRepositoryInMemory[Task])
 
-    // val task = y.value
-
-    import monix.eval.Callback
 
     val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
       def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
@@ -83,7 +81,6 @@ object App {
     // (a4567,4000)
   }
 
-  /*
   def usecase2(): Unit = {
     val c = for {
       _ <- open("a1234", "a1name", None, None, Checking)
@@ -91,9 +88,13 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val task = c(new AccountRepositoryInMemory[Task])
 
-    println(Await.result(y.value.runAsync, Duration.Inf))
+    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+      def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
+      def onError(ex: Throwable): Unit = ex.printStackTrace
+    })
+
     // NonEmptyList(No existing account with no a2345)
   }
 
@@ -105,9 +106,13 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val task = c(new AccountRepositoryInMemory[Task])
 
-    println(Await.result(y.value.runAsync, Duration.Inf))
+    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+      def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
+      def onError(ex: Throwable): Unit = ex.printStackTrace
+    })
+
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
 
@@ -119,11 +124,14 @@ object App {
       b <- balanceByAccount
     } yield b
 
-    val y = c(new AccountRepositoryInMemory)
+    val task = c(new AccountRepositoryInMemory[Task])
 
-    println(Await.result(y.value.runAsync, Duration.Inf))
+    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+      def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
+      def onError(ex: Throwable): Unit = ex.printStackTrace
+    })
+
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }
-  */
 }
 
