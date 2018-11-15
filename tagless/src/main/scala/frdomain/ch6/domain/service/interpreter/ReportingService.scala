@@ -14,12 +14,7 @@ import common._
 
 class ReportingServiceInterpreter[M[_]](implicit me: MonadError[M, Throwable]) extends ReportingService[M, Amount] {
 
-  def balanceByAccount: ReportOperation[Seq[(String, Amount)]] = Kleisli[Valid[M, ?], AccountRepository[M], Seq[(String, Amount)]] { (repo: AccountRepository[M]) =>
-    EitherT {
-      repo.all.map {
-        case Left(errs) => Left(MiscellaneousDomainExceptions(errs))
-        case Right(as) => Right(as.map(a => (a.no, a.balance.amount)))
-      }
-    }
+  def balanceByAccount: ReportOperation[Seq[(String, Amount)]] = Kleisli[M, AccountRepository[M], Seq[(String, Amount)]] { (repo: AccountRepository[M]) =>
+  repo.all.map { accounts => accounts.map(a => (a.no, a.balance.amount)) }
   }
 } 

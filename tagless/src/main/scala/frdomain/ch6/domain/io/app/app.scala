@@ -57,14 +57,13 @@ object App {
       a <- balanceByAccount
     } yield a
   
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
       case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+      case Right(vals) => vals foreach println
     }
   
     // (a2345,2000)
@@ -81,14 +80,13 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
+    // println(y.unsafeRunSync.toList)
+    //
+    y.unsafeRunAsync {
       case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+      case Right(vals) => vals foreach println
     }
     // NonEmptyList(No existing account with no a2345)
   }
@@ -101,14 +99,13 @@ object App {
       a <- balanceByAccount
     } yield a
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
       case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+      case Right(vals) => vals foreach println
     }
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
@@ -121,14 +118,13 @@ object App {
       b <- balanceByAccount
     } yield b
 
-    val y = c(new AccountRepositoryInMemory)
+    val y = c(new AccountRepositoryInMemory[IO])
 
-    y.value.unsafeRunAsync { 
+    // println(y.unsafeRunSync.toList)
+
+    y.unsafeRunAsync {
       case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+      case Right(vals) => vals foreach println
     }
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }

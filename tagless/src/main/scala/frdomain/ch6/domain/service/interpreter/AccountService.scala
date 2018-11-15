@@ -20,87 +20,80 @@ class AccountServiceInterpreter[M[+_]](implicit me: MonadError[M, Throwable]) ex
            name: String, 
            rate: Option[BigDecimal],
            openingDate: Option[Date],
-           accountType: AccountType) = Kleisli[Valid[M, ?], AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
+           accountType: AccountType) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
 
-    EitherT {
-      repo.query(no).flatMap {
-
-        case Right(Some(a)) => Left[AccountServiceException, Account](AlreadyExistingAccount(a.no)).pure[M]
-
-        case Right(None)    => accountType match {
-
-          case Checking => createOrUpdate(repo, Account.checkingAccount(no, name, openingDate, None, Balance())) 
-
-          case Savings  => rate map { r =>
-            createOrUpdate(repo, Account.savingsAccount(no, name, r, openingDate, None, Balance()))
-          } getOrElse {
-            Left(RateMissingForSavingsAccount).pure[M]
-          }
-        }
-
-        case Left(x)        => Left(MiscellaneousDomainExceptions(x)).pure[M]
-      }
-    }
+    repo.query(no).flatMap(maybeAccount => doOpenAccount(repo, 
+      maybeAccount,
+      no, 
+      name, 
+      rate, 
+      openingDate, 
+      accountType
+    ))
   }
+
+  private def doOpenAccount(repo: AccountRepository[M], 
+    maybeAccount: Option[Account],
+    no: String, 
+    name: String, 
+    rate: Option[BigDecimal],
+    openingDate: Option[Date],
+    accountType: AccountType): M[Account] = {
+
+    maybeAccount.map(_ => me.raiseError(new IllegalArgumentException(s"Account no $no already exists")))
+      .getOrElse(createOrUpdate(repo, no, name, rate, openingDate, accountType))
+  }
+
+  private def createOrUpdate(repo: AccountRepository[M],
+    no: String, 
+    name: String, 
+    rate: Option[BigDecimal],
+    openingDate: Option[Date],
+    accountType: AccountType): M[Account] = accountType match {
+
+      case Checking => createOrUpdate(repo, Account.checkingAccount(no, name, openingDate, None, Balance()))
+      case Savings  => rate.map(r => createOrUpdate(repo, Account.savingsAccount(no, name, r, openingDate, None, Balance())))
+                         .getOrElse(me.raiseError(new IllegalArgumentException("Rate missing for savings account")))
+    }
 
   private def createOrUpdate(repo: AccountRepository[M], 
-    errorOrAccount: ErrorOr[Account]): M[Either[AccountServiceException, Account]] = errorOrAccount match {
-
-    case Left(errs) => Left(MiscellaneousDomainExceptions(errs)).pure[M]
-    case Right(a) => repo.store(a).map {
-      case Right(acc) => Right(acc)
-      case Left(errs) => Left(MiscellaneousDomainExceptions(errs))
+    errorOrAccount: ErrorOr[Account]): M[Account] = errorOrAccount match {
+      case Left(errs) => me.raiseError(new IllegalArgumentException(s"${errs.toList}"))
+      case Right(a)   => repo.store(a)
     }
+
+  def close(no: String, closeDate: Option[Date]) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
+
+    for {
+      maybeAccount <- repo.query(no)
+      account      <- maybeAccount.map(a => createOrUpdate(repo, Account.close(a, closeDate.getOrElse(today))))
+                                  .getOrElse(me.raiseError(new IllegalArgumentException(s"Account no $no does not exist")))
+    } yield account
   }
 
-  def close(no: String, closeDate: Option[Date]) = Kleisli[Valid[M, ?], AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
-    EitherT {
-      repo.query(no).flatMap {
-
-        case Right(None) => Left(NonExistingAccount(no)).pure[M]
-
-        case Right(Some(a))    => 
-          val cd = closeDate.getOrElse(today)
-          createOrUpdate(repo, Account.close(a, cd))
-
-        case Left(x)        => Left(MiscellaneousDomainExceptions(x)).pure[M]
-      }
-    }
-  }
-
-  def debit(no: String, amount: Amount) = up(no, amount, D)
-  def credit(no: String, amount: Amount) = up(no, amount, C)
+  def debit(no: String, amount: Amount) = update(no, amount, D)
+  def credit(no: String, amount: Amount) = update(no, amount, C)
 
   private trait DC
   private case object D extends DC
   private case object C extends DC
 
-  private def up(no: String, amount: Amount, dc: DC) = Kleisli[Valid[M, ?], AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
-    EitherT {
-      repo.query(no).flatMap {
+  private def update(no: String, amount: Amount, debitCredit: DC) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
+    for {
 
-        case Right(None) => Left(NonExistingAccount(no)).pure[M]
+      maybeAccount   <- repo.query(no)
+      multiplier = if (debitCredit == D) (-1) else 1
+      account        <- maybeAccount.map(a => createOrUpdate(repo, Account.updateBalance(a, multiplier * amount)))
+                                    .getOrElse(me.raiseError(new IllegalArgumentException(s"Account no $no does not exist")))
 
-        case Right(Some(a))    => dc match {
-          case D => createOrUpdate(repo, Account.updateBalance(a, -amount))
-          case C => createOrUpdate(repo, Account.updateBalance(a, amount))
-        }
-
-        case Left(x)        => Left(MiscellaneousDomainExceptions(x)).pure[M]
-      }
-    }
+    } yield account
   }
 
-  def balance(no: String) = Kleisli[Valid[M, ?], AccountRepository[M], Balance] { (repo: AccountRepository[M]) =>
-    EitherT {
-      repo.balance(no).map { 
-        case Left(errs) => Left(MiscellaneousDomainExceptions(errs))
-        case Right(b) => Right(b)
-      }
-    }
+  def balance(no: String) = Kleisli[M, AccountRepository[M], Balance] { (repo: AccountRepository[M]) =>
+    repo.balance(no)
   }
 
-  def transfer(from: String, to: String, amount: Amount): AccountOperation[M, (Account, Account)] = for { 
+  def transfer(from: String, to: String, amount: Amount): Kleisli[M, AccountRepository[M], (Account, Account)] = for { 
     a <- debit(from, amount)
     b <- credit(to, amount)
   } yield ((a, b))

@@ -17,22 +17,22 @@ import model.{ Account, Balance }
 class AccountRepositoryInMemory[M[+_]](implicit me: MonadError[M, Throwable]) extends AccountRepository[M] {
   lazy val repo = MMap.empty[String, Account]
 
-  def query(no: String): M[ErrorOr[Option[Account]]] = Right(repo.get(no)).pure[M]
+  def query(no: String): M[Option[Account]] = repo.get(no).pure[M]
 
-  def store(a: Account): M[ErrorOr[Account]] = {
+  def store(a: Account): M[Account] = {
     val _ = repo += ((a.no, a))
-    Right(a).pure[M]
+    a.pure[M]
   }
 
-  def query(openedOn: Date): M[ErrorOr[Seq[Account]]] = {
-    Right(repo.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq).pure[M]
+  def query(openedOn: Date): M[Seq[Account]] = {
+    repo.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq.pure[M]
   }
 
-  def all: M[ErrorOr[Seq[Account]]] = Right(repo.values.toSeq).pure[M]
+  def all: M[Seq[Account]] = repo.values.toSeq.pure[M]
 
-  def balance(no: String): M[ErrorOr[Balance]] = query(no).map {
-    case Right(Some(a)) => Right(a.balance)
-    case Right(None) => Left(NonEmptyList.of(s"No account exists with no $no"))
-    case Left(x) => Left(x)
-  }
+  def balance(no: String): M[Balance] = 
+    repo.get(no).map(_.balance) match {
+      case Some(b) => b.pure[M]
+      case _ => me.raiseError[Balance](new IllegalArgumentException(s"Non existing account $no"))
+    }
 }

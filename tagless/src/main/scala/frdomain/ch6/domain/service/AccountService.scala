@@ -19,15 +19,15 @@ case object Savings extends AccountType
 trait AccountService[M[_], Account, Amount, Balance] {
 
   def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
-    accountType: AccountType): AccountOperation[M, Account]
+    accountType: AccountType): Kleisli[M, AccountRepository[M], Account]
 
-  def close(no: String, closeDate: Option[Date]): AccountOperation[M, Account]
+  def close(no: String, closeDate: Option[Date]): Kleisli[M, AccountRepository[M], Account]
 
-  def debit(no: String, amount: Amount): AccountOperation[M, Account]
+  def debit(no: String, amount: Amount): Kleisli[M, AccountRepository[M], Account]
 
-  def credit(no: String, amount: Amount): AccountOperation[M, Account]
+  def credit(no: String, amount: Amount): Kleisli[M, AccountRepository[M], Account]
 
-  def balance(no: String): AccountOperation[M, Balance]
+  def balance(no: String): Kleisli[M, AccountRepository[M], Balance]
 
-  def transfer(from: String, to: String, amount: Amount): AccountOperation[M, (Account, Account)] 
+  def transfer(from: String, to: String, amount: Amount): Kleisli[M, AccountRepository[M], (Account, Account)]
 }
