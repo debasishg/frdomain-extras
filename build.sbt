@@ -36,6 +36,15 @@ lazy val mtl = (project in file("./mtl"))
     addCommandAlias("mtl", "mtl/run")
   )
 
+lazy val ziox = (project in file("./ziox"))
+  .settings(Common.settings: _*)
+  .settings(libraryDependencies ++= Dependencies.zioDependencies)
+
+  .settings (
+    fork in run := true,
+    addCommandAlias("ziox", "ziox/run")
+  )
+
 lazy val root = (project in file(".")).
-    aggregate(catsio, tagless, mtl)
+    aggregate(catsio, tagless, mtl, ziox)
 
