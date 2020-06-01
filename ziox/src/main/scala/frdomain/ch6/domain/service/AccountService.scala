@@ -7,6 +7,7 @@ import zio._
 import repository.AccountRepository
 import common._
 import model.{Account, Balance}
+import cats.data.NonEmptyList
 
 sealed trait AccountType
 case object Checking extends AccountType
@@ -16,12 +17,12 @@ object AccountService {
   trait Service {
 
     def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
-      accountType: AccountType): UIO[Account]
-    def close(no: String, closeDate: Option[Date]): UIO[Account]
-    def debit(no: String, amount: Amount): UIO[Account]
-    def credit(no: String, amount: Amount): UIO[Account]
-    def balance(no: String): UIO[Balance]
-    def transfer(from: String, to: String, amount: Amount): UIO[(Account, Account)]
+      accountType: AccountType): IO[AccountServiceException, Account]
+    def close(no: String, closeDate: Option[Date]): IO[AccountServiceException, Account]
+    def debit(no: String, amount: Amount): IO[AccountServiceException, Account]
+    def credit(no: String, amount: Amount): IO[AccountServiceException, Account]
+    def balance(no: String): IO[AccountServiceException, Balance]
+    def transfer(from: String, to: String, amount: Amount): IO[AccountServiceException, (Account, Account)]
   }
 
   val live = ZLayer.fromService[AccountRepository.Service, AccountService.Service] {
@@ -30,15 +31,16 @@ object AccountService {
     new Service {
 
       def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
-        accountType: AccountType): UIO[Account] = 
-        repo.query(no).flatMap(maybeAccount => doOpenAccount(
+        accountType: AccountType): IO[AccountServiceException, Account] =
+
+        withAccountServiceException(repo.query(no)).flatMap(maybeAccount => doOpenAccount(
           maybeAccount,
           no, 
           name, 
           rate, 
           openingDate, 
           accountType
-        ))
+        )) 
 
       private def doOpenAccount(
         maybeAccount: Option[Account],
@@ -46,9 +48,9 @@ object AccountService {
         name: String, 
         rate: Option[BigDecimal],
         openingDate: Option[Date],
-        accountType: AccountType): UIO[Account] = {
+        accountType: AccountType): IO[AccountServiceException, Account] = {
 
-        maybeAccount.map(_ => ZIO.die(new IllegalArgumentException(s"Account no $no already exists")))
+        maybeAccount.map(_ => IO.fail(AlreadyExistingAccount(no)))
           .getOrElse(createOrUpdate(no, name, rate, openingDate, accountType))
       }
 
@@ -57,46 +59,57 @@ object AccountService {
         name: String, 
         rate: Option[BigDecimal],
         openingDate: Option[Date],
-        accountType: AccountType): UIO[Account] = accountType match {
+        accountType: AccountType): IO[AccountServiceException, Account] = accountType match {
 
           case Checking => createOrUpdate(Account.checkingAccount(no, name, openingDate, None, Balance()))
           case Savings  => rate.map(r => createOrUpdate(Account.savingsAccount(no, name, r, openingDate, None, Balance())))
-                             .getOrElse(ZIO.die(new IllegalArgumentException("Rate missing for savings account")))
+                               .getOrElse(IO.fail(RateMissingForSavingsAccount))
         }
 
-      private def createOrUpdate(errorOrAccount: ErrorOr[Account]): UIO[Account] = errorOrAccount match {
-          case Left(errs) => ZIO.die(new IllegalArgumentException(s"${errs.toList}"))
-          case Right(a)   => repo.store(a)
+      private def createOrUpdate(errorOrAccount: ErrorOr[Account]): IO[AccountServiceException, Account] = errorOrAccount match {
+        case Left(errs) => IO.fail(MiscellaneousDomainExceptions(errs))
+        case Right(a)   => withAccountServiceException(repo.store(a))
+      }
+
+      def close(no: String, closeDate: Option[Date]): IO[AccountServiceException, Account] =
+        withAccountServiceException(repo.query(no)).flatMap {
+          case Some(a) => createOrUpdate(Account.close(a, closeDate.getOrElse(today)))
+          case None    => IO.fail(NonExistingAccount(no)) 
         }
 
-      def close(no: String, closeDate: Option[Date]): UIO[Account] = for {
-        maybeAccount <- repo.query(no)
-        account      <- maybeAccount.map(a => createOrUpdate(Account.close(a, closeDate.getOrElse(today))))
-                                    .getOrElse(ZIO.die(new IllegalArgumentException(s"Account no $no does not exist")))
-      } yield account
-
-      def debit(no: String, amount: Amount): UIO[Account] = update(no, amount, D)
-      def credit(no: String, amount: Amount): UIO[Account] = update(no, amount, C)
+      def debit(no: String, amount: Amount): IO[AccountServiceException, Account] = update(no, amount, D)
+      def credit(no: String, amount: Amount): IO[AccountServiceException, Account] = update(no, amount, C)
 
       private trait DC
       private case object D extends DC
       private case object C extends DC
 
-      private def update(no: String, amount: Amount, debitCredit: DC): UIO[Account] = for {
+      private def update(no: String, amount: Amount, debitCredit: DC): IO[AccountServiceException, Account] = {
+        val multiplier = if (debitCredit == D) (-1) else 1 
+      
+        withAccountServiceException(repo.query(no)).flatMap {
+          case Some(a) => createOrUpdate(Account.updateBalance(a, multiplier * amount))
+          case None    => IO.fail(NonExistingAccount(no)) 
+        }
+      }
 
-          maybeAccount   <- repo.query(no)
-          multiplier = if (debitCredit == D) (-1) else 1
-          account        <- maybeAccount.map(a => createOrUpdate(Account.updateBalance(a, multiplier * amount)))
-                                        .getOrElse(ZIO.die(new IllegalArgumentException(s"Account no $no does not exist")))
+      def balance(no: String): IO[AccountServiceException, Balance] = 
+        withAccountServiceException(repo.query(no)).flatMap {
+          case Some(a) => IO.succeed(a.balance)
+          case None    => IO.fail(NonExistingAccount(no))
+        }
 
-        } yield account
-
-      def balance(no: String): UIO[Balance] = repo.balance(no)
-
-      def transfer(from: String, to: String, amount: Amount): UIO[(Account, Account)] = for { 
+      def transfer(from: String, to: String, amount: Amount): IO[AccountServiceException, (Account, Account)] = for { 
         a <- debit(from, amount)
         b <- credit(to, amount)
       } yield ((a, b))
+
+      private def withAccountServiceException[A](t: Task[A]): IO[AccountServiceException, A] = 
+        t.foldM(
+          error   => IO.fail(MiscellaneousDomainExceptions(NonEmptyList.of(error.getMessage))),
+          success => IO.succeed(success)
+        )
+
     }
   }
 }

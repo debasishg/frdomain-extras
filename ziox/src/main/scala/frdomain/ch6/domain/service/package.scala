@@ -9,21 +9,21 @@ package object service {
   type AccountService = Has[AccountService.Service]
   
   def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
-    accountType: AccountType): URIO[AccountService, Account] = 
+    accountType: AccountType): ZIO[AccountService, AccountServiceException, Account] = 
     ZIO.accessM(_.get.open(no, name, rate, openingDate, accountType))
 
-  def close(no: String, closeDate: Option[Date]): URIO[AccountService, Account] = 
+  def close(no: String, closeDate: Option[Date]): ZIO[AccountService, AccountServiceException, Account] = 
     ZIO.accessM(_.get.close(no, closeDate))
 
-  def debit(no: String, amount: Amount): URIO[AccountService, Account] =
+  def debit(no: String, amount: Amount): ZIO[AccountService, AccountServiceException, Account] =
     ZIO.accessM(_.get.debit(no, amount))
 
-  def credit(no: String, amount: Amount): URIO[AccountService, Account] =
+  def credit(no: String, amount: Amount): ZIO[AccountService, AccountServiceException, Account] =
     ZIO.accessM(_.get.credit(no, amount))
 
-  def balance(no: String): URIO[AccountService, Balance] = 
+  def balance(no: String): ZIO[AccountService, AccountServiceException, Balance] = 
     ZIO.accessM(_.get.balance(no))
 
-  def transfer(from: String, to: String, amount: Amount): URIO[AccountService, (Account, Account)] =
+  def transfer(from: String, to: String, amount: Amount): ZIO[AccountService, AccountServiceException, (Account, Account)] =
     ZIO.accessM(_.get.transfer(from, to, amount))
 }
