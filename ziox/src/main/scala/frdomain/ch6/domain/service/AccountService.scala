@@ -110,7 +110,6 @@ object AccountService {
           error   => IO.fail(MiscellaneousDomainExceptions(NonEmptyList.of(error.getMessage))),
           success => IO.succeed(success)
         )
-
     }
   }
 }

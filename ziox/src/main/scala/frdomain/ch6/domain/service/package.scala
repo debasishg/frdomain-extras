@@ -8,6 +8,7 @@ import common._
 
 package object service {
   type AccountService = Has[AccountService.Service]
+  type ReportingService = Has[ReportingService.Service]
   
   def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
     accountType: AccountType): ZIO[AccountService, AccountServiceException, Account] = 
@@ -27,4 +28,7 @@ package object service {
 
   def transfer(from: String, to: String, amount: Amount): ZIO[AccountService, AccountServiceException, (Account, Account)] =
     ZIO.accessM(_.get.transfer(from, to, amount))
+
+  def balanceByAccount: RIO[ReportingService, Seq[(String, Amount)]] =
+    ZIO.accessM(_.get.balanceByAccount)
 }

@@ -10,16 +10,43 @@ import model.{Account, Balance}
 object Main { 
 
   def run(): Unit = {
-    val banking: ZIO[AccountService, AccountServiceException, Account] = for {
-      a <- open("12345", "account", Some(12.0), None, Checking)
-      _ <- credit(a.no, 1000)
-      _ <- debit(a.no, 100)
-      _ <- balance(a.no)
-      c <- close(a.no, None)
-    } yield c
 
-    val horizontal = InMemoryAccountRepository.layer >>> AccountService.live
-    val program = banking.provideLayer(horizontal) // .orDie 
-    println(Runtime.default.unsafeRun(program))
+    // uses AccountService
+    val opens = 
+      for {
+        _ <- open("a1234", "a1name", None, None, Checking)
+        _ <- open("a2345", "a2name", None, None, Checking)
+        _ <- open("a3456", "a3name", Some(BigDecimal(5.8)), None, Savings)
+        _ <- open("a4567", "a4name", None, None, Checking)
+        _ <- open("a5678", "a5name", Some(BigDecimal(2.3)), None, Savings)
+      } yield (())
+  
+    // uses AccountService
+    val credits = 
+      for {
+        _ <- credit("a1234", 1000)
+        _ <- credit("a2345", 2000)
+        _ <- credit("a3456", 3000)
+        _ <- credit("a4567", 4000)
+      } yield (())
+  
+    // uses AccountService and ReportingService
+    val program = for {
+      _ <- opens
+      _ <- credits
+      a <- balanceByAccount
+    } yield a
+  
+    // layers
+    val appLayer = 
+      InMemoryAccountRepository.layer >+> 
+      AccountService.live >+> 
+      ReportingService.live
+
+    val banking = program.provideLayer(appLayer) 
+
+    println(Runtime.default.unsafeRun(banking))
+    // List((a5678,0), (a3456,3000), (a1234,1000), (a2345,2000), (a4567,4000))
+
   }
 }
