@@ -2,9 +2,7 @@ package frdomain.ch6
 package domain
 package service
 
-import cats._
-import cats.data._
-import cats.instances.all._
+import cats.data.NonEmptyList
 
 trait AccountServiceException {
   def message: NonEmptyList[String]

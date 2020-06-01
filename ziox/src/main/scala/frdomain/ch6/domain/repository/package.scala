@@ -1,8 +1,9 @@
 package frdomain.ch6.domain
 
 import zio._
-import model.{ Account, Balance }
 import java.util.Date
+
+import model.{ Account, Balance }
 
 package object repository {
   type AccountRepository = Has[AccountRepository.Service]

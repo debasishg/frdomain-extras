@@ -3,11 +3,12 @@ package domain
 package service
 
 import java.util.Date
-import zio._
-import repository.AccountRepository
-import common._
-import model.{Account, Balance}
 import cats.data.NonEmptyList
+import zio._
+
+import common._
+import repository.AccountRepository
+import model.{Account, Balance}
 
 sealed trait AccountType
 case object Checking extends AccountType

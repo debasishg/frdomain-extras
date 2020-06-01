@@ -2,9 +2,10 @@ package frdomain.ch6.domain
 package repository
 
 import java.util.Date
+import zio._
+
 import model.{ Account, Balance }
 import common._
-import zio._
 
 class InMemoryAccountRepository(ref: Ref[Map[String, Account]])  {
   val accountRepository = new AccountRepository.Service {

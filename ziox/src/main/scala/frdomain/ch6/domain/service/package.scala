@@ -2,6 +2,7 @@ package frdomain.ch6.domain
 
 import java.util.Date
 import zio._
+
 import model.{ Account, Balance }
 import common._
 

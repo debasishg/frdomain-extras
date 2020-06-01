@@ -2,11 +2,9 @@ package frdomain.ch6.domain
 package repository
 
 import java.util.Date
-
 import zio._
 
 import common._
-
 import model.{ Account, Balance }
 
 object AccountRepository extends Serializable {
