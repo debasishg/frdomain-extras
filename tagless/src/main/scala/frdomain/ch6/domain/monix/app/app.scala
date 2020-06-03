@@ -18,7 +18,7 @@ import model.Account
 object App {
 
   import monix.eval.Task
-  import monix.eval.Callback
+  import monix.execution.Callback
   import monix.execution.Scheduler.Implicits.global
 
   import scala.concurrent.Await
@@ -69,7 +69,7 @@ object App {
     val task = c(new AccountRepositoryInMemory[Task])
 
 
-    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+    val _ = task.runAsync(new Callback[Throwable, Seq[(String, Amount)]] {
       def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
       def onError(ex: Throwable): Unit = ex.printStackTrace
     })
@@ -90,7 +90,7 @@ object App {
 
     val task = c(new AccountRepositoryInMemory[Task])
 
-    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+    val _ = task.runAsync(new Callback[Throwable, Seq[(String, Amount)]] {
       def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
       def onError(ex: Throwable): Unit = ex.printStackTrace
     })
@@ -108,7 +108,7 @@ object App {
 
     val task = c(new AccountRepositoryInMemory[Task])
 
-    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+    val _ = task.runAsync(new Callback[Throwable, Seq[(String, Amount)]] {
       def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
       def onError(ex: Throwable): Unit = ex.printStackTrace
     })
@@ -126,7 +126,7 @@ object App {
 
     val task = c(new AccountRepositoryInMemory[Task])
 
-    val _ = task.runAsync(new Callback[Seq[(String, Amount)]] {
+    val _ = task.runAsync(new Callback[Throwable, Seq[(String, Amount)]] {
       def onSuccess(value: Seq[(String, Amount)]): Unit = value.foreach(println)
       def onError(ex: Throwable): Unit = ex.printStackTrace
     })
