@@ -26,14 +26,13 @@ object Dependencies {
     val log4jSlf4jImpl    = "org.apache.logging.log4j"      % "log4j-slf4j-impl"                 % Log4j2Version
   }
 
-  val macroParadise = compilerPlugin("org.scalamacros" % "paradise" % macroParadiseVersion cross CrossVersion.full)
-  val kindProjector = compilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion)
+  val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
   val commonDependencies: Seq[ModuleID] = Seq(Cats.cats, Cats.catsEffect)
   val monixDependencies: Seq[ModuleID] = Seq(Monix.monix)
 
   val catsIODependencies: Seq[ModuleID] = commonDependencies
-  val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(macroParadise, kindProjector) ++ monixDependencies
-  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(macroParadise, kindProjector) ++ monixDependencies
+  val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(kindProjector) ++ monixDependencies
+  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies
   val zioDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Zio.zio, Zio.zioLogging, Zio.zioLoggingSlf4j, Zio.log4jAPI, Zio.log4jCore, Zio.log4jSlf4jImpl) 
 }

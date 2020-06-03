@@ -4,7 +4,9 @@ package service
 
 import cats.data.NonEmptyList
 
-trait AccountServiceException {
+trait BankingException
+
+trait AccountServiceException extends BankingException {
   def message: NonEmptyList[String]
 }
 
@@ -27,4 +29,6 @@ case object RateMissingForSavingsAccount extends AccountServiceException {
 case class MiscellaneousDomainExceptions(msgs: NonEmptyList[String]) extends AccountServiceException {
   val message = msgs
 }
+
+case class ReportingServiceException(message: NonEmptyList[String]) extends BankingException
 

@@ -29,6 +29,6 @@ package object service {
   def transfer(from: String, to: String, amount: Amount): ZIO[AccountService, AccountServiceException, (Account, Account)] =
     ZIO.accessM(_.get.transfer(from, to, amount))
 
-  def balanceByAccount: RIO[ReportingService, Seq[(String, Amount)]] =
+  def balanceByAccount: ZIO[ReportingService, ReportingServiceException, Seq[(String, Amount)]] =
     ZIO.accessM(_.get.balanceByAccount)
 }

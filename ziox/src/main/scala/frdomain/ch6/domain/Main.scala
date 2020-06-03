@@ -9,7 +9,7 @@ import model.{Account, Balance}
 
 object Main { 
 
-  def run(): Unit = {
+  def main(args: Array[String]): Unit = {
 
     // uses AccountService
     val opens = 
