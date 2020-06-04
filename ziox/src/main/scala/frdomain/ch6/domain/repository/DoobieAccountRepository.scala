@@ -23,7 +23,6 @@ import model.{Account, Balance}
 import common._
 import config._
 
-
 final class DoobieAccountRepository(xa: Transactor[Task]) {
   import DoobieAccountRepository.SQL
 
@@ -42,7 +41,7 @@ final class DoobieAccountRepository(xa: Transactor[Task]) {
          .orDie
 
     def store(a: Account): Task[Account] = 
-      SQL.insert(a)
+      SQL.upsert(a)
          .run
          .transact(xa)
          .map(_ => a)
@@ -106,10 +105,13 @@ object DoobieAccountRepository {
   }
 
   object SQL {
-    def insert(account: Account): Update0 = sql"""
-      insert into accounts (no, name, rateOfInterest, dateOfOpen, dateOfClose, balance)
-      values (${account.no}, ${account.name}, null, ${account.dateOfOpen.getOrElse(today)}, ${account.dateOfClose}, ${account.balance.amount})
+    def upsert(account: Account): Update0 = {
+      // upsert in h2
+      sql"""
+        merge into accounts key (no)
+        values (${account.no}, ${account.name}, null, ${account.dateOfOpen.getOrElse(today)}, ${account.dateOfClose}, ${account.balance.amount})
       """.update
+    }
 
     implicit val accountRead: Read[Account] =
       Read[(String, String, Option[BigDecimal], Date, Option[Date], BigDecimal)].map { 
@@ -138,6 +140,5 @@ object DoobieAccountRepository {
     def getByDateOfOpen(openDate: Date): Query0[Account] = sql"""
       select * from accounts where dateOfOpen = $openDate
       """.query[Account]
-
   }
 }

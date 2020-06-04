@@ -1,7 +1,6 @@
 package frdomain.ch6.domain
 
-import pureconfig.ConfigConvert
-import pureconfig.ConfigSource
+import pureconfig.{ConfigConvert, ConfigSource}
 import pureconfig.generic.semiauto._
 import zio.{ Has, ZIO, ZLayer }
 
@@ -66,5 +65,4 @@ object config {
   object DBConfig {
     implicit val convert: ConfigConvert[DBConfig] = deriveConvert
   }
-  
 }

@@ -18,7 +18,7 @@ object Dependencies {
     val zio               = "dev.zio"                      %% "zio"                              % zioVersion
     val ziotest           = "dev.zio"                      %% "zio-test"                         % zioVersion % "test"
     val ziotestsbt        = "dev.zio"                      %% "zio-test-sbt"                     % zioVersion % "test"
-    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % "2.0.0.0-RC12"
+    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % "2.1.3.0-RC15"
     val zioLogging        = "dev.zio"                      %% "zio-logging"                      % zioLoggingVersion
     val zioLoggingSlf4j   = "dev.zio"                      %% "zio-logging-slf4j"                % zioLoggingVersion
     val log4jAPI          = "org.apache.logging.log4j"      % "log4j-api"                        % log4j2Version
