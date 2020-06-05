@@ -9,29 +9,37 @@ import repository.{AccountRepository, DoobieAccountRepository}
 
 object Layers {
 
-  type Layer0Env =
+  type InfraLayerEnv =
     ConfigProvider with Blocking 
 
-  type Layer1Env =
-    Layer0Env with AppConfigProvider with DbConfigProvider
+  type ConfigLayerEnv =
+    InfraLayerEnv with AppConfigProvider with DbConfigProvider
 
-  type Layer2Env =
-    Layer1Env with AccountRepository
+  type RepositoryLayerEnv =
+    ConfigLayerEnv with AccountRepository
 
-  type AppEnv = Layer2Env with AccountService with ReportingService
+  type ServiceLayerEnv = RepositoryLayerEnv with AccountService with ReportingService
+
+  type AppEnv = ServiceLayerEnv
 
   object live {
 
-    val layer0: ZLayer[Blocking, Throwable, Layer0Env] =
+    val infraLayer: ZLayer[Blocking, Throwable, InfraLayerEnv] =
       Blocking.any ++ ConfigProvider.live 
 
-    val layer1: ZLayer[Layer0Env, Throwable, Layer1Env] =
+    val configLayer: ZLayer[InfraLayerEnv, Throwable, ConfigLayerEnv] =
       AppConfigProvider.fromConfig ++ DbConfigProvider.fromConfig ++ ZLayer.identity
 
-    val layer2: ZLayer[Layer1Env, Throwable, Layer2Env] =
+    val repositoryLayer: ZLayer[ConfigLayerEnv, Throwable, RepositoryLayerEnv] =
       DoobieAccountRepository.layer ++ ZLayer.identity
 
+    val serviceLayer: ZLayer[RepositoryLayerEnv, Throwable, ServiceLayerEnv] =
+      AccountService.live ++ ReportingService.live ++ ZLayer.identity
+
     val appLayer: ZLayer[Blocking, Throwable, AppEnv] =
-      layer0 >+> layer1 >+> layer2 >+> AccountService.live >+> ReportingService.live
+      infraLayer >+> 
+      configLayer >+> 
+      repositoryLayer >+> 
+      serviceLayer
   }
 }
