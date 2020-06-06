@@ -47,7 +47,7 @@ object Main {
 
       } yield a
 
-    val banking: ZIO[Blocking, Object, Seq[(String, common.Amount)]] = prog.provideLayer(Layers.live.appLayer) 
+    val banking: ZIO[Blocking, Object, Seq[(String, common.Amount)]] = prog.provideLayer(Application.prod.appLayer) 
     println(Runtime.default.unsafeRun(banking))
   }
 }

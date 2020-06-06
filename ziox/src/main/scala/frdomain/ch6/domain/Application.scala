@@ -7,8 +7,9 @@ import config._
 import service._
 import repository.{AccountRepository, DoobieAccountRepository}
 
-object Layers {
+object Application {
 
+  // define all layers of the architecture
   type InfraLayerEnv =
     ConfigProvider with Blocking 
 
@@ -18,11 +19,13 @@ object Layers {
   type RepositoryLayerEnv =
     ConfigLayerEnv with AccountRepository
 
-  type ServiceLayerEnv = RepositoryLayerEnv with AccountService with ReportingService
+  type ServiceLayerEnv = 
+    RepositoryLayerEnv with AccountService with ReportingService
 
   type AppEnv = ServiceLayerEnv
 
-  object live {
+  // compose layers for prod
+  object prod {
 
     val infraLayer: ZLayer[Blocking, Throwable, InfraLayerEnv] =
       Blocking.any ++ ConfigProvider.live 
@@ -36,6 +39,7 @@ object Layers {
     val serviceLayer: ZLayer[RepositoryLayerEnv, Throwable, ServiceLayerEnv] =
       AccountService.live ++ ReportingService.live ++ ZLayer.identity
 
+    // final application layer for prod
     val appLayer: ZLayer[Blocking, Throwable, AppEnv] =
       infraLayer >+> 
       configLayer >+> 
