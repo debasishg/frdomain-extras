@@ -12,4 +12,6 @@ object Versions {
   val log4j2Version = "2.13.1"
   val pureconfigVersion = "0.12.1"
   val doobieVersion = "0.8.8"
+  val newtypeVersion = "0.4.3"
+  val refinedVersion = "0.9.14"
 }

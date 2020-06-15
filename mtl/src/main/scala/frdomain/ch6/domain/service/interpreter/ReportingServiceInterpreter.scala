@@ -9,12 +9,13 @@ import cats.mtl._
 
 import repository.AccountRepository
 import common._
+import model.account.AccountNo
 
 class ReportingServiceInterpreter[M[+_]]
   (implicit E: MonadError[M, AppException], A: ApplicativeAsk[M, AccountRepository[M]]) 
     extends ReportingService[M, Amount] {
 
-  def balanceByAccount: M[Seq[(String, Amount)]] = for {
+  def balanceByAccount: M[Seq[(AccountNo, Amount)]] = for {
 
     repo        <- A.ask
     allBalances <- repo.all

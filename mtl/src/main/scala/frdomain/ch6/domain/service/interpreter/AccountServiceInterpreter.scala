@@ -9,7 +9,7 @@ import cats._
 import cats.implicits._
 import cats.mtl._
 
-import model.{ Account, Balance }
+import model.account._
 import common._
 import repository.AccountRepository
 
@@ -17,8 +17,8 @@ class AccountServiceInterpreter[M[+_]]
   (implicit E: MonadError[M, AppException], A: ApplicativeAsk[M, AccountRepository[M]]) 
     extends AccountService[M, Account, Amount, Balance] {
 
-  def open(no: String, 
-    name: String, 
+  def open(no: AccountNo, 
+    name: AccountName, 
     rate: Option[BigDecimal],
     openingDate: Option[Date],
     accountType: AccountType): M[Account] = {
@@ -34,8 +34,8 @@ class AccountServiceInterpreter[M[+_]]
 
   private def doOpenAccount(repo: AccountRepository[M], 
     maybeAccount: Option[Account],
-    no: String, 
-    name: String, 
+    no: AccountNo, 
+    name: AccountName, 
     rate: Option[BigDecimal],
     openingDate: Option[Date],
     accountType: AccountType): M[Account] = {
@@ -45,8 +45,8 @@ class AccountServiceInterpreter[M[+_]]
   }
 
   private def createOrUpdate(repo: AccountRepository[M],
-    no: String, 
-    name: String, 
+    no: AccountNo, 
+    name: AccountName, 
     rate: Option[BigDecimal],
     openingDate: Option[Date],
     accountType: AccountType): M[Account] = accountType match {
@@ -62,7 +62,7 @@ class AccountServiceInterpreter[M[+_]]
       case Right(a)   => repo.store(a)
     }
 
-  def close(no: String, closeDate: Option[Date]): M[Account] = {
+  def close(no: AccountNo, closeDate: Option[Date]): M[Account] = {
 
     for {
 
@@ -73,7 +73,7 @@ class AccountServiceInterpreter[M[+_]]
     } yield account
   }
 
-  def balance(no: String): M[Balance] = for {
+  def balance(no: AccountNo): M[Balance] = for {
 
     repo  <- A.ask
     b     <- repo.balance(no)
@@ -84,10 +84,10 @@ class AccountServiceInterpreter[M[+_]]
   private object D extends DC
   private object C extends DC
 
-  def debit(no: String, amount: Amount): M[Account] = update(no, amount, D)
-  def credit(no: String, amount: Amount): M[Account] = update(no, amount, C)
+  def debit(no: AccountNo, amount: Amount): M[Account] = update(no, amount, D)
+  def credit(no: AccountNo, amount: Amount): M[Account] = update(no, amount, C)
 
-  private def update(no: String, amount: Amount, debitCredit: DC): M[Account] = for {
+  private def update(no: AccountNo, amount: Amount, debitCredit: DC): M[Account] = for {
 
     repo           <- A.ask
     maybeAccount   <- repo.query(no)
@@ -97,7 +97,7 @@ class AccountServiceInterpreter[M[+_]]
 
   } yield account
 
-  def transfer(from: String, to: String, amount: Amount): M[(Account, Account)] = for { 
+  def transfer(from: AccountNo, to: AccountNo, amount: Amount): M[(Account, Account)] = for { 
     a <- debit(from, amount)
     b <- credit(to, amount)
   } yield ((a, b))

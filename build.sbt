@@ -29,6 +29,7 @@ lazy val tagless = (project in file("./tagless"))
 lazy val mtl = (project in file("./mtl"))
   .settings(Common.settings: _*)
   .settings(libraryDependencies ++= Dependencies.catsMtlDependencies)
+  .settings(scalacOptions += "-Ymacro-annotations")
 
   .settings (
     fork in run := true,

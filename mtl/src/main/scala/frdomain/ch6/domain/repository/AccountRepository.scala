@@ -10,12 +10,12 @@ import cats.instances.all._
 
 import common._
 
-import model.{ Account, Balance }
+import model.account._
 
 trait AccountRepository[M[_]] { 
-  def query(no: String): M[Option[Account]]
+  def query(no: AccountNo): M[Option[Account]]
   def store(a: Account): M[Account]
   def query(openedOn: Date): M[Seq[Account]]
   def all: M[Seq[Account]]
-  def balance(no: String): M[Balance] 
+  def balance(no: AccountNo): M[Balance] 
 }

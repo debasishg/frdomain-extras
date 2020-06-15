@@ -12,12 +12,12 @@ import cats.implicits._
 import cats.instances.all._
 
 import common._
-import model.{ Account, Balance }
+import model.account._
 
 class AccountRepositoryInMemory[M[+_]](implicit me: MonadError[M, AppException]) extends AccountRepository[M] {
-  lazy val repo = MMap.empty[String, Account]
+  lazy val repo = MMap.empty[AccountNo, Account]
 
-  def query(no: String): M[Option[Account]] = repo.get(no).pure[M]
+  def query(no: AccountNo): M[Option[Account]] = repo.get(no).pure[M]
 
   def store(a: Account): M[Account] = {
     val _ = repo += ((a.no, a))
@@ -30,7 +30,7 @@ class AccountRepositoryInMemory[M[+_]](implicit me: MonadError[M, AppException])
 
   def all: M[Seq[Account]] = repo.values.toSeq.pure[M]
 
-  def balance(no: String): M[Balance] = 
+  def balance(no: AccountNo): M[Balance] = 
     repo.get(no).map(_.balance) match {
       case Some(b) => b.pure[M]
       case _ => me.raiseError[Balance](NonExistingAccount(no))
