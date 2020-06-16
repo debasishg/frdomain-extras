@@ -24,9 +24,9 @@ object App {
 
   def main(args: Array[String]): Unit = {
     usecase1()
-    usecase2()
-    usecase3()
-    usecase4()
+    // usecase2()
+    // usecase3()
+    // usecase4()
   }
 
   def usecase1(): Unit = {
@@ -94,9 +94,7 @@ object App {
       case Right(vs) => vs.foreach(println)
     }
 
-    // java.lang.Exception: Already existing account with no a1234
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:24)
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:18)
+    // java.lang.Exception: No existing account with no a2345
   }
 
   def usecase3(): Unit = {
