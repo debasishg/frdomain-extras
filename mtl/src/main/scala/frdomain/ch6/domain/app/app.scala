@@ -3,11 +3,14 @@ package domain
 package io
 package app
 
+import scala.collection.immutable.Map 
+
 import cats._
 import cats.data._
 import cats.implicits._
 import cats.instances.all._
 import cats.effect.IO
+import cats.effect.concurrent.Ref
 import cats.mtl._
 
 import squants.market._
@@ -18,7 +21,7 @@ import repository.interpreter.AccountRepositoryInMemory
 import service.interpreter._
 import service.{ Checking, Savings }
 import common._
-import model.account.{AccountNo, AccountName}
+import model.account.{AccountNo, AccountName, Account}
 
 object App {
 
@@ -32,7 +35,7 @@ object App {
   def usecase1(): Unit = {
 
     import Implicits._
-    val repo = new AccountRepositoryInMemory[IO]
+    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
     implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
     val accountServiceIO = new AccountServiceInterpreter[IO]
     val reportingServiceIO = new ReportingServiceInterpreter[IO]
@@ -62,7 +65,7 @@ object App {
       _ <- credits
       a <- balanceByAccount
     } yield a
-  
+
     println(c.unsafeRunSync.toList)
   
     // (a2345,2000)
@@ -75,7 +78,7 @@ object App {
   def usecase2(): Unit = {
 
     import Implicits._
-    val repo = new AccountRepositoryInMemory[IO]
+    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
     implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
     val accountServiceIO = new AccountServiceInterpreter[IO]
     val reportingServiceIO = new ReportingServiceInterpreter[IO]
@@ -100,7 +103,7 @@ object App {
   def usecase3(): Unit = {
 
     import Implicits._
-    val repo = new AccountRepositoryInMemory[IO]
+    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
     implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
     val accountServiceIO = new AccountServiceInterpreter[IO]
     val reportingServiceIO = new ReportingServiceInterpreter[IO]
@@ -128,7 +131,7 @@ object App {
   def usecase4(): Unit = {
 
     import Implicits._
-    val repo = new AccountRepositoryInMemory[IO]
+    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
     implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
     val accountServiceIO = new AccountServiceInterpreter[IO]
     val reportingServiceIO = new ReportingServiceInterpreter[IO]
