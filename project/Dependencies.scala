@@ -4,6 +4,14 @@ import Versions._
 
 object Dependencies {
 
+  object Misc {
+    val newtype           = "io.estatico"                  %% "newtype"                          % newtypeVersion
+    val refinedCore       = "eu.timepit"                   %% "refined"                          % refinedVersion
+    val refinedCats       = "eu.timepit"                   %% "refined-cats"                     % refinedVersion
+    val squants           = "org.typelevel"                %% "squants"                          % squantsVersion
+
+  }
+
   object Cats {
     val cats              = "org.typelevel"                %%   "cats-core"                      % catsVersion
     val catsEffect        = "org.typelevel"                %%   "cats-effect"                    % catsEffectVersion
@@ -43,7 +51,9 @@ object Dependencies {
 
   val catsIODependencies: Seq[ModuleID] = commonDependencies
   val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(kindProjector) ++ monixDependencies
-  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies
+
+  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies ++ Seq(Misc.newtype, Misc.refinedCore, Misc.refinedCats, Misc.squants)
+
   val zioDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Zio.zio, Zio.zioLogging, Zio.zioLoggingSlf4j, Zio.log4jAPI, Zio.log4jCore, 
     Zio.log4jSlf4jImpl, Zio.pureconfig, Zio.zioInteropCats, Doobie.doobieCore, Doobie.doobieH2, Doobie.doobieHikari, Doobie.doobiePostgres, flywayDb) 
 }
