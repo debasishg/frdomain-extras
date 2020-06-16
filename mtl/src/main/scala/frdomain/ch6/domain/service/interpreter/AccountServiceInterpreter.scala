@@ -8,6 +8,7 @@ import java.util.{ Date, Calendar }
 import cats._
 import cats.implicits._
 import cats.mtl._
+import squants.market._
 
 import model.account._
 import common._
@@ -84,10 +85,10 @@ class AccountServiceInterpreter[M[+_]]
   private object D extends DC
   private object C extends DC
 
-  def debit(no: AccountNo, amount: Amount): M[Account] = update(no, amount, D)
-  def credit(no: AccountNo, amount: Amount): M[Account] = update(no, amount, C)
+  def debit(no: AccountNo, amount: Money): M[Account] = update(no, amount, D)
+  def credit(no: AccountNo, amount: Money): M[Account] = update(no, amount, C)
 
-  private def update(no: AccountNo, amount: Amount, debitCredit: DC): M[Account] = for {
+  private def update(no: AccountNo, amount: Money, debitCredit: DC): M[Account] = for {
 
     repo           <- A.ask
     maybeAccount   <- repo.query(no)
@@ -97,7 +98,7 @@ class AccountServiceInterpreter[M[+_]]
 
   } yield account
 
-  def transfer(from: AccountNo, to: AccountNo, amount: Amount): M[(Account, Account)] = for { 
+  def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Account, Account)] = for { 
     a <- debit(from, amount)
     b <- credit(to, amount)
   } yield ((a, b))

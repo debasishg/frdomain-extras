@@ -3,6 +3,7 @@ package domain
 package service
 
 import java.util.Date
+import squants.market._
 import model.account.{AccountNo, AccountName}
 
 sealed trait AccountType
@@ -16,12 +17,12 @@ abstract class AccountService[M[_], Account, Amount, Balance] {
 
   def close(no: AccountNo, closeDate: Option[Date]): M[Account]
 
-  def debit(no: AccountNo, amount: Amount): M[Account]
+  def debit(no: AccountNo, amount: Money): M[Account]
 
-  def credit(no: AccountNo, amount: Amount): M[Account]
+  def credit(no: AccountNo, amount: Money): M[Account]
 
   def balance(no: AccountNo): M[Balance]
 
-  def transfer(from: AccountNo, to: AccountNo, amount: Amount): M[(Account, Account)] 
+  def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Account, Account)] 
 }
 

@@ -14,4 +14,5 @@ object Versions {
   val doobieVersion = "0.8.8"
   val newtypeVersion = "0.4.3"
   val refinedVersion = "0.9.14"
+  val squantsVersion = "1.6.0"
 }

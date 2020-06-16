@@ -13,6 +13,7 @@ import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.{ Uuid, ValidBigDecimal }
 import eu.timepit.refined.types.string.NonEmptyString
 import _root_.io.estatico.newtype.macros.newtype
+import squants.market._
 
 import common._
 
@@ -22,8 +23,10 @@ object account {
   @newtype case class AccountNo(value: String)
   @newtype case class AccountName(value: String)
   
-  
-  case class Balance(amount: Amount = 0)
+  final val ZERO_USD = USD(BigDecimal(0.0))
+  case class Balance(amount: Money = ZERO_USD)
+  final val ZERO_BALANCE = Balance()
+
   sealed trait Account {
     def no: AccountNo
     def name: AccountName
@@ -33,10 +36,10 @@ object account {
   }
   
   final case class CheckingAccount (no: AccountNo, name: AccountName,
-    dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = Balance()) extends Account
+    dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = ZERO_BALANCE) extends Account
   
   final case class SavingsAccount (no: AccountNo, name: AccountName, rateOfInterest: Amount, 
-    dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = Balance()) extends Account
+    dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = ZERO_BALANCE) extends Account
   
   object Account {
   
@@ -97,12 +100,12 @@ object account {
       }.toEither
     }
   
-    private def checkBalance(a: Account, amount: Amount): ValidationResult[Account] = {
-      if (amount < 0 && a.balance.amount < -amount) s"Insufficient amount in ${a.no} to debit".invalidNel
+    private def checkBalance(a: Account, amount: Money): ValidationResult[Account] = {
+      if (amount < ZERO_USD && a.balance.amount < (-1) * amount) s"Insufficient amount in ${a.no} to debit".invalidNel
       else a.validNel
     }
   
-    def updateBalance(a: Account, amount: Amount): ErrorOr[Account] = {
+    def updateBalance(a: Account, amount: Money): ErrorOr[Account] = {
       (validateAccountAlreadyClosed(a), checkBalance(a, amount)).mapN { (_, _) =>
         a match {
           case c: CheckingAccount => c.copy(balance = Balance(c.balance.amount + amount))

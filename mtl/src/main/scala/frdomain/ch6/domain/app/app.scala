@@ -10,6 +10,8 @@ import cats.instances.all._
 import cats.effect.IO
 import cats.mtl._
 
+import squants.market._
+
 import repository.AccountRepository
 import repository.interpreter.AccountRepositoryInMemory
 
@@ -49,10 +51,10 @@ object App {
   
     val credits = 
       for {
-        _ <- credit(AccountNo("a1234"), 1000)
-        _ <- credit(AccountNo("a2345"), 2000)
-        _ <- credit(AccountNo("a3456"), 3000)
-        _ <- credit(AccountNo("a4567"), 4000)
+        _ <- credit(AccountNo("a1234"), USD(1000))
+        _ <- credit(AccountNo("a2345"), USD(2000))
+        _ <- credit(AccountNo("a3456"), USD(3000))
+        _ <- credit(AccountNo("a4567"), USD(4000))
       } yield (())
   
     val c = for {
@@ -83,7 +85,7 @@ object App {
 
     val c = for {
       _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
-      _ <- credit(AccountNo("a2345"), 2000)
+      _ <- credit(AccountNo("a2345"), USD(2000))
       a <- balanceByAccount
     } yield a
 
@@ -110,8 +112,8 @@ object App {
 
     val c = for {
       _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
-      _ <- credit(AccountNo("a1234"), 2000)
-      _ <- debit(AccountNo("a1234"), 4000)
+      _ <- credit(AccountNo("a1234"), USD(2000))
+      _ <- debit(AccountNo("a1234"), USD(4000))
       a <- balanceByAccount
     } yield a
 
@@ -138,8 +140,8 @@ object App {
 
     val c = for {
       a <- open(AccountNo("a134"), AccountName("a1name"), Some(BigDecimal(-0.9)), None, Savings)
-      _ <- credit(a.no, 2000)
-      _ <- debit(a.no, 4000)
+      _ <- credit(a.no, USD(2000))
+      _ <- debit(a.no, USD(4000))
       b <- balanceByAccount
     } yield b
 

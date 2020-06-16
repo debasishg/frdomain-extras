@@ -6,6 +6,7 @@ package interpreter
 import cats._
 import cats.implicits._
 import cats.mtl._
+import squants.market._
 
 import repository.AccountRepository
 import common._
@@ -15,7 +16,7 @@ class ReportingServiceInterpreter[M[+_]]
   (implicit E: MonadError[M, AppException], A: ApplicativeAsk[M, AccountRepository[M]]) 
     extends ReportingService[M, Amount] {
 
-  def balanceByAccount: M[Seq[(AccountNo, Amount)]] = for {
+  def balanceByAccount: M[Seq[(AccountNo, Money)]] = for {
 
     repo        <- A.ask
     allBalances <- repo.all
