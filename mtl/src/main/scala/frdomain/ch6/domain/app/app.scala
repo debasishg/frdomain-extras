@@ -20,139 +20,148 @@ import repository.interpreter.AccountRepositoryInMemory
 
 import service.interpreter._
 import service.{ Checking, Savings }
-import common._
 import model.account.{AccountNo, AccountName, Account}
 
 object App {
 
   def main(args: Array[String]): Unit = {
-    usecase1()
-    // usecase2()
-    // usecase3()
-    // usecase4()
+    List(UseCase1(), UseCase2(), UseCase3(), UseCase4()).foreach {
+      _.unsafeRunAsync { 
+        case Left(th) => println(th.getMessage)
+        case Right(vs) => println(vs) 
+      }
+    }
+
+    // [info] List((a5678,0 USD), (a3456,3E+3 USD), (a1234,1E+3 USD), (a2345,2E+3 USD), (a4567,4E+3 USD))
+    // [info] No existing account with no a2345
+    // [info] Insufficient amount in a1234 to debit
+    // [info] Account No has to be at least 5 characters long: found a134/Interest rate -0.9 must be > 0
   }
 
-  def usecase1(): Unit = {
+  object UseCase1 {
 
-    import Implicits._
-    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-    implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-    val accountServiceIO = new AccountServiceInterpreter[IO]
-    val reportingServiceIO = new ReportingServiceInterpreter[IO]
+    def apply() = { 
+      import Implicits._
+      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
+      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+      program 
+    }
 
-    import accountServiceIO._
-    import reportingServiceIO._
+    def program[F[+_]]
+      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
+                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-    val opens = 
+      val accountServiceIO = new AccountServiceInterpreter[F]
+      val reportingServiceIO = new ReportingServiceInterpreter[F]
+
+      import accountServiceIO._
+      import reportingServiceIO._
+
+      val opens = 
+        for {
+          _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
+          _ <- open(AccountNo("a2345"), AccountName("a2name"), None, None, Checking)
+          _ <- open(AccountNo("a3456"), AccountName("a3name"), BigDecimal(5.8).some, None, Savings)
+          _ <- open(AccountNo("a4567"), AccountName("a4name"), None, None, Checking)
+          _ <- open(AccountNo("a5678"), AccountName("a5name"), BigDecimal(2.3).some, None, Savings)
+        } yield (())
+    
+      val credits = 
+        for {
+          _ <- credit(AccountNo("a1234"), USD(1000))
+          _ <- credit(AccountNo("a2345"), USD(2000))
+          _ <- credit(AccountNo("a3456"), USD(3000))
+          _ <- credit(AccountNo("a4567"), USD(4000))
+        } yield (())
+    
+      for {
+        _ <- opens
+        _ <- credits
+        a <- balanceByAccount
+      } yield a
+    }
+  }
+
+  object UseCase2 {
+
+    def apply() = { 
+      import Implicits._
+      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
+      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+      program 
+    }
+
+    def program[F[+_]]
+      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
+                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+
+      val accountServiceIO = new AccountServiceInterpreter[F]
+      val reportingServiceIO = new ReportingServiceInterpreter[F]
+
+      import accountServiceIO._
+      import reportingServiceIO._
+
       for {
         _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
-        _ <- open(AccountNo("a2345"), AccountName("a2name"), None, None, Checking)
-        _ <- open(AccountNo("a3456"), AccountName("a3name"), BigDecimal(5.8).some, None, Savings)
-        _ <- open(AccountNo("a4567"), AccountName("a4name"), None, None, Checking)
-        _ <- open(AccountNo("a5678"), AccountName("a5name"), BigDecimal(2.3).some, None, Savings)
-      } yield (())
-  
-    val credits = 
-      for {
-        _ <- credit(AccountNo("a1234"), USD(1000))
         _ <- credit(AccountNo("a2345"), USD(2000))
-        _ <- credit(AccountNo("a3456"), USD(3000))
-        _ <- credit(AccountNo("a4567"), USD(4000))
-      } yield (())
-  
-    val c = for {
-      _ <- opens
-      _ <- credits
-      a <- balanceByAccount
-    } yield a
-
-    println(c.unsafeRunSync.toList)
-  
-    // (a2345,2000)
-    // (a5678,0)
-    // (a3456,3000)
-    // (a1234,1000)
-    // (a4567,4000)
+        a <- balanceByAccount
+      } yield a
+    }
   }
 
-  def usecase2(): Unit = {
+  object UseCase3 {
 
-    import Implicits._
-    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-    implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-    val accountServiceIO = new AccountServiceInterpreter[IO]
-    val reportingServiceIO = new ReportingServiceInterpreter[IO]
-
-    import accountServiceIO._
-    import reportingServiceIO._
-
-    val c = for {
-      _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
-      _ <- credit(AccountNo("a2345"), USD(2000))
-      a <- balanceByAccount
-    } yield a
-
-    c.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs.foreach(println)
+    def apply() = { 
+      import Implicits._
+      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
+      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+      program 
     }
 
-    // java.lang.Exception: No existing account with no a2345
+    def program[F[+_]]
+      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
+                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+
+      val accountServiceIO = new AccountServiceInterpreter[F]
+      val reportingServiceIO = new ReportingServiceInterpreter[F]
+
+      import accountServiceIO._
+      import reportingServiceIO._
+
+      for {
+        _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
+        _ <- credit(AccountNo("a1234"), USD(2000))
+        _ <- debit(AccountNo("a1234"), USD(4000))
+        a <- balanceByAccount
+      } yield a
+    }
   }
 
-  def usecase3(): Unit = {
+  object UseCase4 {
 
-    import Implicits._
-    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-    implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-    val accountServiceIO = new AccountServiceInterpreter[IO]
-    val reportingServiceIO = new ReportingServiceInterpreter[IO]
-
-    import accountServiceIO._
-    import reportingServiceIO._
-
-    val c = for {
-      _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
-      _ <- credit(AccountNo("a1234"), USD(2000))
-      _ <- debit(AccountNo("a1234"), USD(4000))
-      a <- balanceByAccount
-    } yield a
-
-    c.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs.foreach(println)
+    def apply() = { 
+      import Implicits._
+      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
+      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+      program 
     }
 
-    // java.lang.Exception: Insufficient amount in a1234 to debit
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:24)
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:18)
-  }
+    def program[F[+_]]
+      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
+                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-  def usecase4(): Unit = {
+      val accountServiceIO = new AccountServiceInterpreter[F]
+      val reportingServiceIO = new ReportingServiceInterpreter[F]
 
-    import Implicits._
-    val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-    implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-    val accountServiceIO = new AccountServiceInterpreter[IO]
-    val reportingServiceIO = new ReportingServiceInterpreter[IO]
+      import accountServiceIO._
+      import reportingServiceIO._
 
-    import accountServiceIO._
-    import reportingServiceIO._
-
-    val c = for {
-      a <- open(AccountNo("a134"), AccountName("a1name"), Some(BigDecimal(-0.9)), None, Savings)
-      _ <- credit(a.no, USD(2000))
-      _ <- debit(a.no, USD(4000))
-      b <- balanceByAccount
-    } yield b
-
-    c.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs.foreach(println)
+      for {
+        a <- open(AccountNo("a134"), AccountName("a1name"), Some(BigDecimal(-0.9)), None, Savings)
+        _ <- credit(a.no, USD(2000))
+        _ <- debit(a.no, USD(4000))
+        b <- balanceByAccount
+      } yield b
     }
-
-    // java.lang.Exception: Account No has to be at least 5 characters long: found a134/Interest rate -0.9 must be > 0
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:24)
-    //   at frdomain.ch6.domain.io.app.Implicits$$anon$1.raiseError(Implicits.scala:18)
   }
 }
