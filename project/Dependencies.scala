@@ -41,10 +41,15 @@ object Dependencies {
     val doobieHikari      = "org.tpolecat"                 %% "doobie-hikari"                    % doobieVersion
     val doobiePostgres    = "org.tpolecat"                 %% "doobie-postgres"                  % doobieVersion
   }
+
+  object Skunk {
+    val skunkCore         = "org.tpolecat"                 %% "skunk-core"                       % skunkVersion
+    val skunkCirce        = "org.tpolecat"                 %% "skunk-circe"                      % skunkVersion
+  }
+
   val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "5.2.4"
 
   val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
-
 
   val commonDependencies: Seq[ModuleID] = Seq(Cats.cats, Cats.catsEffect)
   val monixDependencies: Seq[ModuleID] = Seq(Monix.monix)
@@ -52,7 +57,7 @@ object Dependencies {
   val catsIODependencies: Seq[ModuleID] = commonDependencies
   val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(kindProjector) ++ monixDependencies
 
-  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies ++ Seq(Misc.newtype, Misc.refinedCore, Misc.refinedCats, Misc.squants)
+  val catsMtlDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies ++ Seq(Misc.newtype, Misc.refinedCore, Misc.refinedCats, Misc.squants) ++ Seq(Skunk.skunkCore, Skunk.skunkCirce)
 
   val zioDependencies: Seq[ModuleID] = commonDependencies ++ Seq(Zio.zio, Zio.zioLogging, Zio.zioLoggingSlf4j, Zio.log4jAPI, Zio.log4jCore, 
     Zio.log4jSlf4jImpl, Zio.pureconfig, Zio.zioInteropCats, Doobie.doobieCore, Doobie.doobieH2, Doobie.doobieHikari, Doobie.doobiePostgres, flywayDb) 
