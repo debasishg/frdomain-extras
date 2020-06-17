@@ -21,10 +21,10 @@ class AccountRepositoryInMemory[M[+_]](repo: Ref[M, Map[AccountNo, Account]])(im
 
   def store(a: Account): M[Account] = repo.update(_ + ((a.no, a))).map(_ => a)
 
-  def query(openedOn: Date): M[Seq[Account]] = 
-    repo.get.map(_.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq)
+  def query(openedOn: Date): M[List[Account]] = 
+    repo.get.map(_.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toList)
 
-  def all: M[Seq[Account]] = repo.get.map(_.values.toSeq)
+  def all: M[List[Account]] = repo.get.map(_.values.toList)
 
   def balance(no: AccountNo): M[Balance] = 
     query(no).flatMap { 

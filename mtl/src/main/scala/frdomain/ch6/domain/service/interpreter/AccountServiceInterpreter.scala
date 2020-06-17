@@ -15,8 +15,8 @@ import common._
 import repository.AccountRepository
 
 class AccountServiceInterpreter[M[+_]]
-  (implicit E: MonadError[M, AppException], A: ApplicativeAsk[M, AccountRepository[M]]) 
-    extends AccountService[M, Account, Amount, Balance] {
+  (implicit E: MonadError[M, AppException], 
+            A: ApplicativeAsk[M, AccountRepository[M]]) extends AccountService[M, Account, Amount, Balance] {
 
   def open(no: AccountNo, 
     name: AccountName, 
@@ -27,22 +27,10 @@ class AccountServiceInterpreter[M[+_]]
     for {
 
       repo           <- A.ask
-      maybeAccount   <- repo.query(no)
-      account        <- doOpenAccount(repo, maybeAccount, no, name, rate, openingDate, accountType)
+      _              <- repo.query(no).ensureOr(_ => AlreadyExistingAccount(no))(!_.isDefined) 
+      account        <- createOrUpdate(repo, no, name, rate, openingDate, accountType)
 
     } yield account
-  }
-
-  private def doOpenAccount(repo: AccountRepository[M], 
-    maybeAccount: Option[Account],
-    no: AccountNo, 
-    name: AccountName, 
-    rate: Option[BigDecimal],
-    openingDate: Option[Date],
-    accountType: AccountType): M[Account] = {
-
-    maybeAccount.map(_ => E.raiseError(AlreadyExistingAccount(no)))
-      .getOrElse(createOrUpdate(repo, no, name, rate, openingDate, accountType))
   }
 
   private def createOrUpdate(repo: AccountRepository[M],
@@ -54,7 +42,7 @@ class AccountServiceInterpreter[M[+_]]
 
       case Checking => createOrUpdate(repo, Account.checkingAccount(no, name, openingDate, None, Balance()))
       case Savings  => rate.map(r => createOrUpdate(repo, Account.savingsAccount(no, name, r, openingDate, None, Balance())))
-                         .getOrElse(E.raiseError(RateMissingForSavingsAccount))
+                           .getOrElse(E.raiseError(RateMissingForSavingsAccount))
     }
 
   private def createOrUpdate(repo: AccountRepository[M], 
@@ -68,9 +56,9 @@ class AccountServiceInterpreter[M[+_]]
     for {
 
       repo           <- A.ask
-      maybeAccount   <- repo.query(no)
-      account        <- maybeAccount.map(a => createOrUpdate(repo, Account.close(a, closeDate.getOrElse(today))))
-                                    .getOrElse(E.raiseError(NonExistingAccount(no)))
+      maybeAccount   <- repo.query(no).ensureOr(_ => NonExistingAccount(no))(_.isDefined) 
+      account        <- createOrUpdate(repo, Account.close(maybeAccount.get, closeDate.getOrElse(today)))
+
     } yield account
   }
 
@@ -91,10 +79,9 @@ class AccountServiceInterpreter[M[+_]]
   private def update(no: AccountNo, amount: Money, debitCredit: DC): M[Account] = for {
 
     repo           <- A.ask
-    maybeAccount   <- repo.query(no)
+    maybeAccount   <- repo.query(no).ensureOr(_ => NonExistingAccount(no))(_.isDefined) 
     multiplier = if (debitCredit == D) (-1) else 1
-    account        <- maybeAccount.map(a => createOrUpdate(repo, Account.updateBalance(a, multiplier * amount)))
-                                  .getOrElse(E.raiseError(NonExistingAccount(no)))
+    account        <- createOrUpdate(repo, Account.updateBalance(maybeAccount.get, multiplier * amount))
 
   } yield account
 

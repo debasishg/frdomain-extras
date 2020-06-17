@@ -25,4 +25,3 @@ abstract class AccountService[M[_], Account, Amount, Balance] {
 
   def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Account, Account)] 
 }
-

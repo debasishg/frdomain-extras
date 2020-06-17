@@ -15,7 +15,7 @@ import model.account._
 trait AccountRepository[M[_]] { 
   def query(no: AccountNo): M[Option[Account]]
   def store(a: Account): M[Account]
-  def query(openedOn: Date): M[Seq[Account]]
-  def all: M[Seq[Account]]
+  def query(openedOn: Date): M[List[Account]]
+  def all: M[List[Account]]
   def balance(no: AccountNo): M[Balance] 
 }
