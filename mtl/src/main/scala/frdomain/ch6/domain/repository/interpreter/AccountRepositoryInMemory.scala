@@ -26,9 +26,9 @@ class AccountRepositoryInMemory[M[+_]](repo: Ref[M, Map[AccountNo, Account]])(im
 
   def all: M[List[Account]] = repo.get.map(_.values.toList)
 
-  def balance(no: AccountNo): M[Balance] = 
+  def balance(no: AccountNo): M[Option[Balance]] = 
     query(no).flatMap { 
-      case Some(a) => a.balance.pure[M]
-      case None => me.raiseError[Balance](NonExistingAccount(no))
+      case Some(a) => a.balance.some.pure[M]
+      case None => me.raiseError[Option[Balance]](NonExistingAccount(no))
     }
 }

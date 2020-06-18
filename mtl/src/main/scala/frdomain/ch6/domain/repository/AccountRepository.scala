@@ -17,5 +17,5 @@ trait AccountRepository[M[_]] {
   def store(a: Account): M[Account]
   def query(openedOn: Date): M[List[Account]]
   def all: M[List[Account]]
-  def balance(no: AccountNo): M[Balance] 
+  def balance(no: AccountNo): M[Option[Balance]]
 }

@@ -21,7 +21,7 @@ abstract class AccountService[M[_], Account, Amount, Balance] {
 
   def credit(no: AccountNo, amount: Money): M[Account]
 
-  def balance(no: AccountNo): M[Balance]
+  def balance(no: AccountNo): M[Option[Balance]]
 
   def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Account, Account)] 
 }

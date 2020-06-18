@@ -62,7 +62,7 @@ class AccountServiceInterpreter[M[+_]]
     } yield account
   }
 
-  def balance(no: AccountNo): M[Balance] = for {
+  def balance(no: AccountNo): M[Option[Balance]] = for {
 
     repo  <- A.ask
     b     <- repo.balance(no)

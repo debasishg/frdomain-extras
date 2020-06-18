@@ -1,6 +1,5 @@
 package frdomain.ch6
 
-
 package domain
 package repository
 package interpreter
@@ -22,7 +21,6 @@ import model.account._
 import ext.skunkx._
 
 class AccountRepositorySkunk[M[+_]: Sync](
-  // sessionPool: Resource[M, Session[M]])(implicit me: MonadError[M, AppException]) extends AccountRepository[M] {
   sessionPool: Resource[M, Session[M]]) extends AccountRepository[M] {
   import AccountQueries._
 
@@ -33,7 +31,12 @@ class AccountRepositorySkunk[M[+_]: Sync](
       }
     }
 
-  def store(a: Account): M[Account] = ???
+  def store(a: Account): M[Account] = 
+    sessionPool.use { session =>
+      session.prepare(upsertAccount).use { cmd =>
+        cmd.execute(a).void.map(_ => a)
+      }
+    }
 
   def query(openedOn: Date): M[List[Account]] = 
     sessionPool.use { session =>
@@ -44,7 +47,7 @@ class AccountRepositorySkunk[M[+_]: Sync](
 
   def all: M[List[Account]] = sessionPool.use(_.execute(selectAll))
 
-  def balance(no: AccountNo): M[Balance] = ??? 
+  def balance(no: AccountNo): M[Option[Balance]] = query(no).map(_.map(_.balance))
 }
 
 private object AccountQueries {
@@ -90,4 +93,59 @@ private object AccountQueries {
         SELECT a.no, a.name, a.type, a.rateOfInterest, a.dateOfOpen, a.dateOfClose, a.balance
         FROM accounts
        """.query(decoder)
+
+  val insertAccount: Command[Account] =
+    sql"""
+        INSERT INTO accounts
+        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, $timestamp, $numeric)
+       """.command.contramap {
+
+      case a => a match {
+        case CheckingAccount(no, nm, dop, doc, b) =>
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+        case SavingsAccount(no, nm, r, dop, doc, b) =>
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+      }
+    }
+
+  val updateAccount: Command[Account] =
+    sql"""
+        UPDATE accounts SET
+          name             = $varchar,
+          type             = $varchar,
+          rateOfInterest   = $numeric,
+          dateOfOpen       = $timestamp,
+          dateOfClose      = $timestamp,
+          balance          = $numeric
+        WHERE no = $varchar
+       """.command.contramap {
+
+      case a => a match {
+        case CheckingAccount(no, nm, dop, doc, b) =>
+          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount ~ no.value
+        case SavingsAccount(no, nm, r, dop, doc, b) =>
+          nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount ~ no.value
+      }
+    }
+
+  val upsertAccount: Command[Account] =
+    sql"""
+        INSERT INTO accounts
+        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, $timestamp, $numeric)
+        ON CONFLICT(no) DO UPDATE SET
+          name             = EXCLUDED.name,
+          type             = EXCLUDED.type,
+          rateOfInterest   = EXCLUDED.rateOfInterest,
+          dateOfOpen       = EXCLUDED.dateOfOpen,
+          dateOfClose      = EXCLUDED.dateOfClose,
+          balance          = EXCLUDED.balance
+       """.command.contramap {
+
+      case a => a match {
+        case CheckingAccount(no, nm, dop, doc, b) =>
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+        case SavingsAccount(no, nm, r, dop, doc, b) =>
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+      }
+    }
 }
