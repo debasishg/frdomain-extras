@@ -1,7 +1,7 @@
 package frdomain.ch6
 package domain
 
-import java.util.{ Date, Calendar }
+import java.time.LocalDateTime
 import cats._
 import cats.data._
 import cats.implicits._
@@ -12,6 +12,6 @@ object common {
   type ValidationResult[A] = ValidatedNel[String, A]
   type ErrorOr[A] = Either[NonEmptyList[String], A]
 
-  def today = Calendar.getInstance.getTime
+  def today = LocalDateTime.now  
 }
 

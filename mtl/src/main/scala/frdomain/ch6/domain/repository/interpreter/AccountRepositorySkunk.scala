@@ -1,5 +1,4 @@
 package frdomain.ch6
-
 package domain
 package repository
 package interpreter
@@ -38,10 +37,10 @@ class AccountRepositorySkunk[M[+_]: Sync](
       }
     }
 
-  def query(openedOn: Date): M[List[Account]] = 
+  def query(openedOn: LocalDateTime): M[List[Account]] = 
     sessionPool.use { session =>
       session.prepare(selectByOpenedDate).use { ps =>
-        ps.stream(toLocalDateTime(openedOn), 1024).compile.toList
+        ps.stream(openedOn, 1024).compile.toList
       }
     }
 
@@ -52,25 +51,13 @@ class AccountRepositorySkunk[M[+_]: Sync](
 
 private object AccountQueries {
 
-  def toJavaDate(dt: LocalDateTime): Option[Date] = {
-    if (dt == null) None
-    else {
-      val zdt = dt.atZone(ZoneId.systemDefault())
-      Some(Date.from(zdt.toInstant()))
-    }
-  }
-
-  def toLocalDateTime(dt: Date): LocalDateTime = {
-    LocalDateTime.ofInstant(dt.toInstant(), ZoneId.systemDefault())
-  }
-
   val decoder: Decoder[Account] =
     (varchar ~ varchar ~ varchar ~ numeric ~ timestamp ~ timestamp ~ numeric).map {
       case no ~ nm ~ tp ~ ri ~ dp ~ dc ~ bl =>
         if (tp == "Checking") {
-          CheckingAccount(AccountNo(no), AccountName(nm), toJavaDate(dp), toJavaDate(dc), Balance(USD(bl)))
+          CheckingAccount(AccountNo(no), AccountName(nm), Option(dp), Option(dc), Balance(USD(bl)))
         } else {
-          SavingsAccount(AccountNo(no), AccountName(nm), ri, toJavaDate(dp), toJavaDate(dc), Balance(USD(bl)))
+          SavingsAccount(AccountNo(no), AccountName(nm), ri, Option(dp), Option(dc), Balance(USD(bl)))
         }
     }
 
@@ -102,9 +89,9 @@ private object AccountQueries {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) =>
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
       }
     }
 
@@ -122,9 +109,9 @@ private object AccountQueries {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) =>
-          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
       }
     }
 
@@ -143,9 +130,9 @@ private object AccountQueries {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) =>
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.map(toLocalDateTime).getOrElse(null) ~ doc.map(toLocalDateTime).getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
       }
     }
 }

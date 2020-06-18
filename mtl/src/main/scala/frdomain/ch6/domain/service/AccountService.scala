@@ -2,7 +2,7 @@ package frdomain.ch6
 package domain
 package service
 
-import java.util.Date
+import java.time.LocalDateTime
 import squants.market._
 import model.account.{AccountNo, AccountName}
 
@@ -12,10 +12,10 @@ case object Savings extends AccountType
 
 abstract class AccountService[M[_], Account, Amount, Balance] {
 
-  def open(no: AccountNo, name: AccountName, rate: Option[BigDecimal], openingDate: Option[Date], 
+  def open(no: AccountNo, name: AccountName, rate: Option[BigDecimal], openingDate: Option[LocalDateTime], 
     accountType: AccountType): M[Account]
 
-  def close(no: AccountNo, closeDate: Option[Date]): M[Account]
+  def close(no: AccountNo, closeDate: Option[LocalDateTime]): M[Account]
 
   def debit(no: AccountNo, amount: Money): M[Account]
 

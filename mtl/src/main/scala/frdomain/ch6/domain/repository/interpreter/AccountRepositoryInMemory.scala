@@ -3,7 +3,7 @@ package domain
 package repository
 package interpreter
 
-import java.util.Date
+import java.time.LocalDateTime
 import scala.collection.immutable.Map 
 
 import cats._
@@ -21,7 +21,7 @@ class AccountRepositoryInMemory[M[+_]](repo: Ref[M, Map[AccountNo, Account]])(im
 
   def store(a: Account): M[Account] = repo.update(_ + ((a.no, a))).map(_ => a)
 
-  def query(openedOn: Date): M[List[Account]] = 
+  def query(openedOn: LocalDateTime): M[List[Account]] = 
     repo.get.map(_.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toList)
 
   def all: M[List[Account]] = repo.get.map(_.values.toList)

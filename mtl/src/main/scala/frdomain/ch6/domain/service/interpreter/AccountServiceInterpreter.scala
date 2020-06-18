@@ -3,7 +3,7 @@ package domain
 package service
 package interpreter
 
-import java.util.{ Date, Calendar }
+import java.time.LocalDateTime
 
 import cats._
 import cats.implicits._
@@ -21,7 +21,7 @@ class AccountServiceInterpreter[M[+_]]
   def open(no: AccountNo, 
     name: AccountName, 
     rate: Option[BigDecimal],
-    openingDate: Option[Date],
+    openingDate: Option[LocalDateTime],
     accountType: AccountType): M[Account] = {
 
     for {
@@ -37,7 +37,7 @@ class AccountServiceInterpreter[M[+_]]
     no: AccountNo, 
     name: AccountName, 
     rate: Option[BigDecimal],
-    openingDate: Option[Date],
+    openingDate: Option[LocalDateTime],
     accountType: AccountType): M[Account] = accountType match {
 
       case Checking => createOrUpdate(repo, Account.checkingAccount(no, name, openingDate, None, Balance()))
@@ -51,7 +51,7 @@ class AccountServiceInterpreter[M[+_]]
       case Right(a)   => repo.store(a)
     }
 
-  def close(no: AccountNo, closeDate: Option[Date]): M[Account] = {
+  def close(no: AccountNo, closeDate: Option[LocalDateTime]): M[Account] = {
 
     for {
 
