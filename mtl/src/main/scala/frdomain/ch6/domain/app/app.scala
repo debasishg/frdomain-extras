@@ -15,12 +15,12 @@ import cats.mtl._
 
 import squants.market._
 
+import common._
+import model.account.{ AccountNo, AccountName, Account, Balance }
 import repository.AccountRepository
 import repository.interpreter.AccountRepositoryInMemory
-
+import service.{ ReportingService, AccountService, Checking, Savings }
 import service.interpreter._
-import service.{ Checking, Savings }
-import model.account.{AccountNo, AccountName, Account}
 
 object App {
 
@@ -42,20 +42,17 @@ object App {
 
     def apply() = { 
       import Implicits._
-      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-      program 
+      AccountRepositoryInMemory.make[IO].flatMap { repo =>
+        implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+        program(new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO])
+      }
     }
 
-    def program[F[+_]]
-      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
-                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+      (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-      val accountServiceIO = new AccountServiceInterpreter[F]
-      val reportingServiceIO = new ReportingServiceInterpreter[F]
-
-      import accountServiceIO._
-      import reportingServiceIO._
+      import accountService._
+      import reportingService._
 
       val opens = 
         for {
@@ -86,20 +83,17 @@ object App {
 
     def apply() = { 
       import Implicits._
-      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-      program 
+      AccountRepositoryInMemory.make[IO].flatMap { repo =>
+        implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+        program(new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO])
+      }
     }
 
-    def program[F[+_]]
-      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
-                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+      (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-      val accountServiceIO = new AccountServiceInterpreter[F]
-      val reportingServiceIO = new ReportingServiceInterpreter[F]
-
-      import accountServiceIO._
-      import reportingServiceIO._
+      import accountService._
+      import reportingService._
 
       for {
         _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
@@ -113,20 +107,17 @@ object App {
 
     def apply() = { 
       import Implicits._
-      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-      program 
+      AccountRepositoryInMemory.make[IO].flatMap { repo =>
+        implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+        program(new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO])
+      }
     }
 
-    def program[F[+_]]
-      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
-                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+      (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-      val accountServiceIO = new AccountServiceInterpreter[F]
-      val reportingServiceIO = new ReportingServiceInterpreter[F]
-
-      import accountServiceIO._
-      import reportingServiceIO._
+      import accountService._
+      import reportingService._
 
       for {
         _ <- open(AccountNo("a1234"), AccountName("a1name"), None, None, Checking)
@@ -141,20 +132,17 @@ object App {
 
     def apply() = { 
       import Implicits._
-      val repo = new AccountRepositoryInMemory(Ref.unsafe[IO, Map[AccountNo, Account]](Map.empty))
-      implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
-      program 
+      AccountRepositoryInMemory.make[IO].flatMap { repo =>
+        implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](repo)
+        program(new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO])
+      }
     }
 
-    def program[F[+_]]
-      (implicit ask: ApplicativeAsk[F, AccountRepository[F]], 
-                me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
+    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+      (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
-      val accountServiceIO = new AccountServiceInterpreter[F]
-      val reportingServiceIO = new ReportingServiceInterpreter[F]
-
-      import accountServiceIO._
-      import reportingServiceIO._
+      import accountService._
+      import reportingService._
 
       for {
         a <- open(AccountNo("a134"), AccountName("a1name"), Some(BigDecimal(-0.9)), None, Savings)
