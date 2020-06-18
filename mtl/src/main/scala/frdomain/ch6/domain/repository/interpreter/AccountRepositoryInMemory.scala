@@ -11,11 +11,15 @@ import cats.data._
 import cats.implicits._
 import cats.instances.all._
 import cats.effect.concurrent.Ref
+import cats.effect.Sync
 
 import common._
 import model.account._
 
-class AccountRepositoryInMemory[M[+_]](repo: Ref[M, Map[AccountNo, Account]])(implicit me: MonadError[M, AppException]) extends AccountRepository[M] {
+// Constructor private for the interpreter to prevent the Ref from leaking
+// access through smart constructor below
+final class AccountRepositoryInMemory[M[_]: Monad] private (repo: Ref[M, Map[AccountNo, Account]])
+  extends AccountRepository[M] {
 
   def query(no: AccountNo): M[Option[Account]] = repo.get.map(_.get(no))  
 
@@ -26,9 +30,11 @@ class AccountRepositoryInMemory[M[+_]](repo: Ref[M, Map[AccountNo, Account]])(im
 
   def all: M[List[Account]] = repo.get.map(_.values.toList)
 
-  def balance(no: AccountNo): M[Option[Balance]] = 
-    query(no).flatMap { 
-      case Some(a) => a.balance.some.pure[M]
-      case None => me.raiseError[Option[Balance]](NonExistingAccount(no))
-    }
+  def balance(no: AccountNo): M[Option[Balance]] = query(no).map(_.map(_.balance))
+}
+
+// Smart constructor 
+object AccountRepositoryInMemory {
+  def make[M[+_]: Sync]: M[AccountRepositoryInMemory[M]] =
+    Ref.of[M, Map[AccountNo, Account]](Map.empty).map(new AccountRepositoryInMemory(_))
 }

@@ -19,7 +19,7 @@ import common._
 import model.account._
 import ext.skunkx._
 
-class AccountRepositorySkunk[M[+_]: Sync](
+final class AccountRepositorySkunk[M[+_]: Sync](
   sessionPool: Resource[M, Session[M]]) extends AccountRepository[M] {
   import AccountQueries._
 
@@ -135,4 +135,11 @@ private object AccountQueries {
           no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
       }
     }
+}
+
+// Smart constructor 
+object AccountRepositorySkunk {
+  def make[M[+_]: Sync](
+    sessionPool: Resource[M, Session[M]]
+  ): M[AccountRepositorySkunk[M]] = Sync[M].delay(new AccountRepositorySkunk[M](sessionPool))
 }
