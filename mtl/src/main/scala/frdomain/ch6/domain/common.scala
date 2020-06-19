@@ -11,6 +11,7 @@ object common {
   type Amount = BigDecimal
   type ValidationResult[A] = ValidatedNel[String, A]
   type ErrorOr[A] = Either[NonEmptyList[String], A]
+  type MonadAppException[F[_]] = MonadError[F, AppException]
 
   def today = LocalDateTime.now  
 }
