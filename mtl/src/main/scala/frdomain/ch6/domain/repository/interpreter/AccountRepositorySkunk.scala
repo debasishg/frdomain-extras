@@ -84,15 +84,15 @@ private object AccountQueries {
   val insertAccount: Command[Account] =
     sql"""
         INSERT INTO accounts
-        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, $timestamp, $numeric)
+        VALUES ($varchar, $varchar, $varchar, $numeric, ${timestamp.opt}, ${timestamp.opt}, $numeric)
        """.command.contramap {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) => 
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount
          
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop ~ doc ~ b.amount.amount
       }
     }
 
@@ -102,24 +102,24 @@ private object AccountQueries {
           name             = $varchar,
           type             = $varchar,
           rateOfInterest   = $numeric,
-          dateOfOpen       = $timestamp,
-          dateOfClose      = $timestamp,
+          dateOfOpen       = ${timestamp.opt},
+          dateOfClose      = ${timestamp.opt},
           balance          = $numeric
         WHERE no = $varchar
        """.command.contramap {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) =>
-          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount ~ no.value
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ "Savings" ~ r ~ dop ~ doc ~ b.amount.amount ~ no.value
       }
     }
 
   val upsertAccount: Command[Account] =
     sql"""
         INSERT INTO accounts
-        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, ${timestamp.opt}, $numeric)
+        VALUES ($varchar, $varchar, $varchar, $numeric, ${timestamp.opt}, ${timestamp.opt}, $numeric)
         ON CONFLICT(no) DO UPDATE SET
           name             = EXCLUDED.name,
           type             = EXCLUDED.type,
@@ -131,10 +131,10 @@ private object AccountQueries {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) => 
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount
          
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop ~ doc ~ b.amount.amount
       }
     }
 }
