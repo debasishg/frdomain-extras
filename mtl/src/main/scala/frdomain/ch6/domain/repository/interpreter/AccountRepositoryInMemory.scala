@@ -35,6 +35,6 @@ final class AccountRepositoryInMemory[M[_]: Monad] private (repo: Ref[M, Map[Acc
 
 // Smart constructor 
 object AccountRepositoryInMemory {
-  def make[M[+_]: Sync]: M[AccountRepositoryInMemory[M]] =
+  def make[M[_]: Sync]: M[AccountRepositoryInMemory[M]] =
     Ref.of[M, Map[AccountNo, Account]](Map.empty).map(new AccountRepositoryInMemory(_))
 }

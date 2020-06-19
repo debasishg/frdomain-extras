@@ -48,7 +48,7 @@ object App {
       }
     }
 
-    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+    def program[F[_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
       (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
       import accountService._
@@ -89,7 +89,7 @@ object App {
       }
     }
 
-    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+    def program[F[_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
       (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
       import accountService._
@@ -113,7 +113,7 @@ object App {
       }
     }
 
-    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+    def program[F[_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
       (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
       import accountService._
@@ -138,7 +138,7 @@ object App {
       }
     }
 
-    def program[F[+_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
+    def program[F[_]](accountService: AccountService[F, Account, Amount, Balance], reportingService: ReportingService[F, Amount])
       (implicit me : MonadError[F, AppException]): F[Seq[(AccountNo, Money)]] = {
 
       import accountService._

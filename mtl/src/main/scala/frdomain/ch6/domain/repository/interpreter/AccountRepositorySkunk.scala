@@ -19,7 +19,7 @@ import common._
 import model.account._
 import ext.skunkx._
 
-final class AccountRepositorySkunk[M[+_]: Sync] private (
+final class AccountRepositorySkunk[M[_]: Sync] private (
   sessionPool: Resource[M, Session[M]]) extends AccountRepository[M] {
   import AccountQueries._
 
@@ -52,12 +52,12 @@ final class AccountRepositorySkunk[M[+_]: Sync] private (
 private object AccountQueries {
 
   val decoder: Decoder[Account] =
-    (varchar ~ varchar ~ varchar ~ numeric ~ timestamp ~ timestamp ~ numeric).map {
+    (varchar ~ varchar ~ varchar ~ numeric ~ timestamp ~ timestamp.opt ~ numeric).map {
       case no ~ nm ~ tp ~ ri ~ dp ~ dc ~ bl =>
         if (tp == "Checking") {
-          CheckingAccount(AccountNo(no), AccountName(nm), Option(dp), Option(dc), Balance(USD(bl)))
+          CheckingAccount(AccountNo(no), AccountName(nm), Option(dp), dc, Balance(USD(bl)))
         } else {
-          SavingsAccount(AccountNo(no), AccountName(nm), ri, Option(dp), Option(dc), Balance(USD(bl)))
+          SavingsAccount(AccountNo(no), AccountName(nm), ri, Option(dp), dc, Balance(USD(bl)))
         }
     }
 
@@ -78,7 +78,7 @@ private object AccountQueries {
   val selectAll: Query[Void, Account] =
     sql"""
         SELECT a.no, a.name, a.type, a.rateOfInterest, a.dateOfOpen, a.dateOfClose, a.balance
-        FROM accounts
+        FROM accounts AS a
        """.query(decoder)
 
   val insertAccount: Command[Account] =
@@ -88,8 +88,9 @@ private object AccountQueries {
        """.command.contramap {
 
       case a => a match {
-        case CheckingAccount(no, nm, dop, doc, b) =>
+        case CheckingAccount(no, nm, dop, doc, b) => 
           no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+         
         case SavingsAccount(no, nm, r, dop, doc, b) =>
           no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
       }
@@ -118,7 +119,7 @@ private object AccountQueries {
   val upsertAccount: Command[Account] =
     sql"""
         INSERT INTO accounts
-        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, $timestamp, $numeric)
+        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, ${timestamp.opt}, $numeric)
         ON CONFLICT(no) DO UPDATE SET
           name             = EXCLUDED.name,
           type             = EXCLUDED.type,
@@ -129,17 +130,18 @@ private object AccountQueries {
        """.command.contramap {
 
       case a => a match {
-        case CheckingAccount(no, nm, dop, doc, b) =>
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+        case CheckingAccount(no, nm, dop, doc, b) => 
+          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
+         
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
       }
     }
 }
 
 // Smart constructor 
 object AccountRepositorySkunk {
-  def make[M[+_]: Sync](
+  def make[M[_]: Sync](
     sessionPool: Resource[M, Session[M]]
   ): M[AccountRepositorySkunk[M]] = Sync[M].delay(new AccountRepositorySkunk[M](sessionPool))
 }

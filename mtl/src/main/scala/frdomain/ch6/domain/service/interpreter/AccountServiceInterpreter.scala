@@ -8,15 +8,17 @@ import java.time.LocalDateTime
 import cats._
 import cats.implicits._
 import cats.mtl._
+
 import squants.market._
 
-import model.account._
 import common._
+import model.account._
 import repository.AccountRepository
 
-class AccountServiceInterpreter[M[+_]]
-  (implicit E: MonadError[M, AppException], 
-            A: ApplicativeAsk[M, AccountRepository[M]]) extends AccountService[M, Account, Amount, Balance] {
+class AccountServiceInterpreter[M[_]: MonadAppException]
+  (implicit A: ApplicativeAsk[M, AccountRepository[M]]) extends AccountService[M, Account, Amount, Balance] {
+
+  val E = implicitly[MonadAppException[M]]
 
   def open(no: AccountNo, 
     name: AccountName, 
