@@ -3,8 +3,7 @@ package domain
 package repository
 package interpreter
 
-import java.util.Date
-import java.time.{ LocalDateTime, ZoneId, LocalDate }
+import java.time.LocalDateTime
 
 import cats.implicits._
 import cats.effect._
@@ -15,11 +14,12 @@ import skunk.codec.all._
 import skunk.implicits._
 
 import squants.market._
+
 import common._
 import model.account._
 import ext.skunkx._
 
-final class AccountRepositorySkunk[M[+_]: Sync](
+final class AccountRepositorySkunk[M[+_]: Sync] private (
   sessionPool: Resource[M, Session[M]]) extends AccountRepository[M] {
   import AccountQueries._
 
