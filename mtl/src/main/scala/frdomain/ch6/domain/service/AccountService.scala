@@ -4,24 +4,20 @@ package service
 
 import java.time.LocalDateTime
 import squants.market._
-import model.account.{AccountNo, AccountName}
+import model.account._
 
-sealed trait AccountType
-case object Checking extends AccountType
-case object Savings extends AccountType
-
-abstract class AccountService[M[_], Account, Amount, Balance] {
+abstract class AccountService[M[_], Acc, Amount, Bal] {
 
   def open(no: AccountNo, name: AccountName, rate: Option[BigDecimal], openingDate: Option[LocalDateTime], 
-    accountType: AccountType): M[Account]
+    accountType: AccountType): M[Acc]
 
-  def close(no: AccountNo, closeDate: Option[LocalDateTime]): M[Account]
+  def close(no: AccountNo, closeDate: Option[LocalDateTime]): M[Acc]
 
-  def debit(no: AccountNo, amount: Money): M[Account]
+  def debit(no: AccountNo, amount: Money): M[Acc]
 
-  def credit(no: AccountNo, amount: Money): M[Account]
+  def credit(no: AccountNo, amount: Money): M[Acc]
 
-  def balance(no: AccountNo): M[Option[Balance]]
+  def balance(no: AccountNo): M[Option[Bal]]
 
-  def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Account, Account)] 
+  def transfer(from: AccountNo, to: AccountNo, amount: Money): M[(Acc, Acc)] 
 }

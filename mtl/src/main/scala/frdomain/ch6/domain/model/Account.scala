@@ -15,6 +15,9 @@ import eu.timepit.refined.types.string.NonEmptyString
 import _root_.io.estatico.newtype.macros.newtype
 import squants.market._
 
+import enumeratum._
+import enumeratum.EnumEntry._
+
 import common._
 
 object account {
@@ -119,5 +122,15 @@ object account {
       case SavingsAccount(_, _, r, _, _, _) => r.some
       case _ => None
     }
+  }
+
+  sealed trait AccountType extends EnumEntry 
+
+  object AccountType extends Enum[AccountType] {
+
+    case object Checking extends AccountType
+    case object Savings extends AccountType
+
+    val values = findValues
   }
 }

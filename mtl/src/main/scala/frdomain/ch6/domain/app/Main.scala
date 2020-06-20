@@ -28,7 +28,7 @@ object Main extends IOApp {
       AppResources.make[IO](cfg).use { res =>
         Algebras.make[IO](res.psql).flatMap { algebras =>
           implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](algebras.accountRepository)
-          programCreditNonExistingAccount[IO](new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO]).map { result => 
+          programNormalOps[IO](new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO]).map { result => 
             println(result)
             ExitCode.Success 
           }
