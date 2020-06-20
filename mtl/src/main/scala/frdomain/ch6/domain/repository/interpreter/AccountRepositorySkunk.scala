@@ -10,6 +10,7 @@ import cats.effect._
 import cats.effect.concurrent.Ref
 
 import skunk._
+import skunk.data.Type
 import skunk.codec.all._
 import skunk.implicits._
 
@@ -17,6 +18,7 @@ import squants.market._
 
 import common._
 import model.account._
+import AccountType._
 import ext.skunkx._
 
 final class AccountRepositorySkunk[M[_]: Sync] private (
@@ -51,13 +53,17 @@ final class AccountRepositorySkunk[M[_]: Sync] private (
 
 private object AccountQueries {
 
+  // A codec that maps Postgres type `accountType` to Scala type `AccountType`
+  val accountType = enum(AccountType, Type("accounttype"))
+
   val decoder: Decoder[Account] =
-    (varchar ~ varchar ~ varchar ~ numeric ~ timestamp ~ timestamp.opt ~ numeric).map {
+    (varchar ~ varchar ~ accountType ~ numeric ~ timestamp ~ timestamp.opt ~ numeric).map {
       case no ~ nm ~ tp ~ ri ~ dp ~ dc ~ bl =>
-        if (tp == "Checking") {
-          CheckingAccount(AccountNo(no), AccountName(nm), Option(dp), dc, Balance(USD(bl)))
-        } else {
-          SavingsAccount(AccountNo(no), AccountName(nm), ri, Option(dp), dc, Balance(USD(bl)))
+        tp match {
+          case Checking =>
+            CheckingAccount(AccountNo(no), AccountName(nm), Option(dp), dc, Balance(USD(bl)))
+          case Savings =>
+            SavingsAccount(AccountNo(no), AccountName(nm), ri, Option(dp), dc, Balance(USD(bl)))
         }
     }
 
@@ -84,15 +90,15 @@ private object AccountQueries {
   val insertAccount: Command[Account] =
     sql"""
         INSERT INTO accounts
-        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, $timestamp, $numeric)
+        VALUES ($varchar, $varchar, $accountType, $numeric, ${timestamp.opt}, ${timestamp.opt}, $numeric)
        """.command.contramap {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) => 
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ Checking ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount
          
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount
+          no.value ~ nm.value ~ Savings ~ r ~ dop ~ doc ~ b.amount.amount
       }
     }
 
@@ -100,26 +106,26 @@ private object AccountQueries {
     sql"""
         UPDATE accounts SET
           name             = $varchar,
-          type             = $varchar,
+          type             = $accountType,
           rateOfInterest   = $numeric,
-          dateOfOpen       = $timestamp,
-          dateOfClose      = $timestamp,
+          dateOfOpen       = ${timestamp.opt},
+          dateOfClose      = ${timestamp.opt},
           balance          = $numeric
         WHERE no = $varchar
        """.command.contramap {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) =>
-          nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ Checking ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount ~ no.value
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          nm.value ~ "Savings" ~ r ~ dop.getOrElse(null) ~ doc.getOrElse(null) ~ b.amount.amount ~ no.value
+          nm.value ~ Savings ~ r ~ dop ~ doc ~ b.amount.amount ~ no.value
       }
     }
 
   val upsertAccount: Command[Account] =
     sql"""
         INSERT INTO accounts
-        VALUES ($varchar, $varchar, $varchar, $numeric, $timestamp, ${timestamp.opt}, $numeric)
+        VALUES ($varchar, $varchar, $accountType, $numeric, ${timestamp.opt}, ${timestamp.opt}, $numeric)
         ON CONFLICT(no) DO UPDATE SET
           name             = EXCLUDED.name,
           type             = EXCLUDED.type,
@@ -131,10 +137,10 @@ private object AccountQueries {
 
       case a => a match {
         case CheckingAccount(no, nm, dop, doc, b) => 
-          no.value ~ nm.value ~ "Checking" ~ BigDecimal(0) ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
+          no.value ~ nm.value ~ Checking ~ BigDecimal(0) ~ dop ~ doc ~ b.amount.amount
          
         case SavingsAccount(no, nm, r, dop, doc, b) =>
-          no.value ~ nm.value ~ "Savings" ~ r ~ dop.getOrElse(today) ~ doc ~ b.amount.amount
+          no.value ~ nm.value ~ Savings ~ r ~ dop ~ doc ~ b.amount.amount
       }
     }
 }

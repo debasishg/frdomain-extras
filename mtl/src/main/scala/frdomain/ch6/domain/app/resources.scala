@@ -7,6 +7,7 @@ import cats.effect._
 import cats.implicits._
 
 import skunk._
+import skunk.util.Typer
 import natchez.Trace.Implicits.noop // needed for skunk
 
 import config.config._
@@ -28,7 +29,8 @@ object AppResources {
           port = c.port.value,
           user = c.user.value,
           database = c.database.value,
-          max = c.max.value
+          max = c.max.value,
+          strategy = Typer.Strategy.SearchPath
         )
 
     mkPostgreSqlResource(cfg.postgreSQL).map(AppResources.apply[F])

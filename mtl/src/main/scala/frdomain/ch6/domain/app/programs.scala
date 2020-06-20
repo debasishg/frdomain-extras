@@ -7,7 +7,6 @@ import cats.data._
 import cats.implicits._
 import cats.instances.all._
 import cats.effect._
-import cats.effect.concurrent.Ref
 import cats.mtl._
 
 import squants.market._
@@ -16,6 +15,7 @@ import repository._
 import service._
 import service.interpreter._
 import model.account._
+import AccountType._
 import common._
 
 import Implicits._

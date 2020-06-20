@@ -16,10 +16,11 @@ import cats.mtl._
 import squants.market._
 
 import common._
-import model.account.{ AccountNo, AccountName, Account, Balance }
+import model.account.{ AccountNo, AccountName, Account, Balance, AccountType }
+import AccountType._
 import repository.AccountRepository
 import repository.interpreter.AccountRepositoryInMemory
-import service.{ ReportingService, AccountService, Checking, Savings }
+import service.{ ReportingService, AccountService }
 import service.interpreter._
 
 object App {

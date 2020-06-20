@@ -13,6 +13,7 @@ import squants.market._
 
 import common._
 import model.account._
+import AccountType._
 import repository.AccountRepository
 
 class AccountServiceInterpreter[M[_]: MonadAppException]
