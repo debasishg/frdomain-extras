@@ -24,9 +24,9 @@ import Implicits._
 object Main extends IOApp {
 
   override def run(args: List[String]): IO[ExitCode] =
-    config.load[IO].flatMap { cfg =>
-      AppResources.make[IO](cfg).use { res =>
-        Algebras.make[IO](res.psql).flatMap { algebras =>
+    config.load[IO].flatMap { cfg =>              // load config values
+      AppResources.make[IO](cfg).use { res =>     // make resources based on config
+        Algebras.make[IO](res.psql).flatMap { algebras =>    // make appropriate interpreters for algebras
           implicit val repositoryAsk = DefaultApplicativeAsk.constant[IO, AccountRepository[IO]](algebras.accountRepository)
           programNormalOps[IO](new AccountServiceInterpreter[IO], new ReportingServiceInterpreter[IO]).map { result => 
             println(result)
