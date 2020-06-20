@@ -14,16 +14,24 @@ Chapter 6 of the book contains complete implementations of reactive domain model
 
 ## Effect Implementations
 
-The build in this project now contains 3 implementations:
+The build in this project now contains 4 implementations:
 
-* Implementation of the domain model using [cats-effect IO](https://github.com/typelevel/cats-effect). This is the simplest one specialized on cats-effect IO.
+* **cats-effect based:** Implementation of a domain model using [cats-effect IO](https://github.com/typelevel/cats-effect). The domain model is almost similar to the one in the book. This is the simplest one specialized on cats-effect IO.
 
-* Same domain model based on the [tagless final](http://okmij.org/ftp/tagless-final/index.html) approach, with the following concrete implementations:
+* **tagless-final based:** Same domain model based on the [tagless final](http://okmij.org/ftp/tagless-final/index.html) approach, with the following concrete implementations:
     * cats-effect IO 
     * Monix Task 
 
 	This implementation of tagless final closely follows the [approach](http://debasishg.blogspot.com/2017/07/domain-models-late-evaluation-buys-you.html) that I discussed in one of the blog posts quite some time back.
 
-* Same domain implemented with mtl style APIs from [cats-mtl](https://github.com/typelevel/cats-mtl) alongside the algebraic approach of tagless-final. In order to have optimum performance it eschews the monad transformer stack and uses hand rolled instances of the typeclasses. An [awesome presentation](https://youtu.be/y_QHSDOVJM8) on this topic was given by Pawel Szulc (@rabbitonweb on Twitter). Also Luka Jacobowitz wrote a [nice blogpost](https://typelevel.org/blog/2018/10/06/intro-to-mtl.html) on this topic on the typelevel blog.
+* **mtl + tagless-final:** Same domain implemented with mtl style APIs from [cats-mtl](https://github.com/typelevel/cats-mtl) alongside the algebraic approach of tagless-final. Here are some features of this implementation:
+  * In order to have optimum performance it eschews the monad transformer stack and uses hand rolled instances of the typeclasses. An [awesome presentation](https://youtu.be/y_QHSDOVJM8) on this topic was given by Pawel Szulc (@rabbitonweb on Twitter). Also Luka Jacobowitz wrote a [nice blogpost](https://typelevel.org/blog/2018/10/06/intro-to-mtl.html) on this topic on the typelevel blog.
+  * Has a complete implementation of `AccountRepository` using [skunk](https://github.com/tpolecat/skunk) in addition to the in-memory implementation
+  * Features a _complete runnable application_ with proper modularity and configurations. This is based on the techniques discussed in the excellent book [Practical FP in Scala](https://leanpub.com/pfp-scala) by Gabriel Volpe
+  * Demonstrates the usage of several other functional libraries like [ciris](https://cir.is/docs/overview) for functional configuration management, [enumeratum](https://github.com/lloydmeta/enumeratum) for typesafe reflection free enumerations and [refined](https://github.com/fthomas/refined) for refinement types 
 
-* The same domain model implemented with [ZIO](https://zio.dev/) using the bifunctor based abstraction `ZIO[R, E, A]`, where `R` is the environment, `E` is the exception that can arise out of the execution and `A` is the result that the effect generates. Thanks to [zio-todo-backend](https://github.com/mschuwalow/zio-todo-backend) for a nice illustrative example that helped in the implementation.
+* **zio based:** The same domain model implemented with [ZIO](https://zio.dev/) using the bifunctor based abstraction `ZIO[R, E, A]`, where `R` is the environment, `E` is the exception that can arise out of the execution and `A` is the result that the effect generates. Thanks to [zio-todo-backend](https://github.com/mschuwalow/zio-todo-backend) for a nice illustrative example that helped in the implementation. Here are some features of this implementation:
+  * Features usage of `ZLayer` for modularity and dependency injection of the application
+  * Has a complete implementation of `AccountRepository` using [doobie](https://github.com/tpolecat/doobie) in addition to the in-memory implementation 
+
+**Note:** Each implementation is self complete and can be learnt independently. The domain model is almost identical with some minor differences.
