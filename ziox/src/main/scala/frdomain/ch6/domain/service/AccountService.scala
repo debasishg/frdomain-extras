@@ -3,7 +3,7 @@ package domain
 package service
 
 import java.util.Date
-import cats.data.NonEmptyList
+import cats.data.NonEmptyChain
 import zio._
 
 import common._
@@ -107,7 +107,7 @@ object AccountService {
 
       private def withAccountServiceException[A](t: Task[A]): IO[AccountServiceException, A] = 
         t.foldM(
-          error   => IO.fail(MiscellaneousDomainExceptions(NonEmptyList.of(error.getMessage))),
+          error   => IO.fail(MiscellaneousDomainExceptions(NonEmptyChain(error.getMessage))),
           success => IO.succeed(success)
         )
     }

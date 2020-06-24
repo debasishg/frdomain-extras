@@ -21,7 +21,7 @@ trait AccountRepository {
 
   def balance(no: String): IO[ErrorOr[Balance]] = query(no).map {
     case Right(Some(a)) => Right(a.balance)
-    case Right(None) => Left(NonEmptyList.of(s"No account exists with no $no"))
+    case Right(None) => Left(NonEmptyChain(s"No account exists with no $no"))
     case Left(x) => Left(x)
   }
 }

@@ -10,5 +10,5 @@ import model.account.AccountNo
 trait AccountRepositoryException extends AppException
 
 case class NonExistingAccount(no: AccountNo) extends AccountRepositoryException {
-  val message = NonEmptyList.of(s"No existing account with no $no")
+  val message = NonEmptyChain(s"No existing account with no $no")
 }
