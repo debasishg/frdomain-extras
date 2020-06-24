@@ -3,7 +3,7 @@ package domain
 package service
 
 import zio._
-import cats.data.NonEmptyList
+import cats.data.NonEmptyChain
 
 import common._
 import repository.AccountRepository
@@ -25,7 +25,7 @@ object ReportingService {
 
   private def withReportingServiceException[A](t: Task[A]): IO[ReportingServiceException, A] = 
     t.foldM(
-      error   => IO.fail(ReportingServiceException(NonEmptyList.of(error.getMessage))),
+      error   => IO.fail(ReportingServiceException(NonEmptyChain(error.getMessage))),
       success => IO.succeed(success)
     )
 }

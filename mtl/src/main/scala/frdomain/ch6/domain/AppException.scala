@@ -1,10 +1,10 @@
 package frdomain.ch6
 package domain
 
-import cats.data.NonEmptyList
+import cats.data.NonEmptyChain
 
 trait AppException {
-  def message: NonEmptyList[String]
+  def message: NonEmptyChain[String]
 }
 
 
