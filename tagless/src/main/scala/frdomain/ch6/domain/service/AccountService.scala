@@ -2,7 +2,7 @@ package frdomain.ch6
 package domain
 package service
 
-import java.util.Date
+import java.time.LocalDateTime
 
 import cats._
 import cats.data._
@@ -18,10 +18,10 @@ case object Savings extends AccountType
 
 trait AccountService[M[_], Account, Amount, Balance] {
 
-  def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[Date], 
+  def open(no: String, name: String, rate: Option[BigDecimal], openingDate: Option[LocalDateTime], 
     accountType: AccountType): Kleisli[M, AccountRepository[M], Account]
 
-  def close(no: String, closeDate: Option[Date]): Kleisli[M, AccountRepository[M], Account]
+  def close(no: String, closeDate: Option[LocalDateTime]): Kleisli[M, AccountRepository[M], Account]
 
   def debit(no: String, amount: Amount): Kleisli[M, AccountRepository[M], Account]
 

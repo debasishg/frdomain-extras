@@ -3,7 +3,7 @@ package domain
 package service
 package interpreter
 
-import java.util.{ Date, Calendar }
+import java.time.LocalDateTime
 
 import cats._
 import cats.data._
@@ -19,7 +19,7 @@ class AccountServiceInterpreter[M[+_]](implicit me: MonadError[M, Throwable]) ex
   def open(no: String, 
            name: String, 
            rate: Option[BigDecimal],
-           openingDate: Option[Date],
+           openingDate: Option[LocalDateTime],
            accountType: AccountType) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
 
     repo.query(no).flatMap(maybeAccount => doOpenAccount(repo, 
@@ -37,7 +37,7 @@ class AccountServiceInterpreter[M[+_]](implicit me: MonadError[M, Throwable]) ex
     no: String, 
     name: String, 
     rate: Option[BigDecimal],
-    openingDate: Option[Date],
+    openingDate: Option[LocalDateTime],
     accountType: AccountType): M[Account] = {
 
     maybeAccount.map(_ => me.raiseError(new IllegalArgumentException(s"Account no $no already exists")))
@@ -48,7 +48,7 @@ class AccountServiceInterpreter[M[+_]](implicit me: MonadError[M, Throwable]) ex
     no: String, 
     name: String, 
     rate: Option[BigDecimal],
-    openingDate: Option[Date],
+    openingDate: Option[LocalDateTime],
     accountType: AccountType): M[Account] = accountType match {
 
       case Checking => createOrUpdate(repo, Account.checkingAccount(no, name, openingDate, None, Balance()))
@@ -62,7 +62,7 @@ class AccountServiceInterpreter[M[+_]](implicit me: MonadError[M, Throwable]) ex
       case Right(a)   => repo.store(a)
     }
 
-  def close(no: String, closeDate: Option[Date]) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
+  def close(no: String, closeDate: Option[LocalDateTime]) = Kleisli[M, AccountRepository[M], Account] { (repo: AccountRepository[M]) =>
 
     for {
       maybeAccount <- repo.query(no)

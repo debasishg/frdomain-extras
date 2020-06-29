@@ -3,7 +3,7 @@ package domain
 package repository
 package interpreter
 
-import java.util.Date
+import java.time.LocalDateTime
 import scala.collection.mutable.{ Map => MMap }
 
 import cats._
@@ -24,7 +24,7 @@ class AccountRepositoryInMemory[M[+_]](implicit me: MonadError[M, Throwable]) ex
     a.pure[M]
   }
 
-  def query(openedOn: Date): M[Seq[Account]] = {
+  def query(openedOn: LocalDateTime): M[Seq[Account]] = {
     repo.values.filter(_.dateOfOpen.getOrElse(today) == openedOn).toSeq.pure[M]
   }
 
