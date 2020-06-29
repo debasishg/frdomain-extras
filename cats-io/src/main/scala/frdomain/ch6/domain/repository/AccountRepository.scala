@@ -2,7 +2,7 @@ package frdomain.ch6
 package domain
 package repository
 
-import java.util.Date
+import java.time.LocalDateTime
 
 import cats._
 import cats.data._
@@ -16,7 +16,7 @@ import model.{ Account, Balance }
 trait AccountRepository { 
   def query(no: String): IO[ErrorOr[Option[Account]]]
   def store(a: Account): IO[ErrorOr[Account]]
-  def query(openedOn: Date): IO[ErrorOr[Seq[Account]]]
+  def query(openedOn: LocalDateTime): IO[ErrorOr[Seq[Account]]]
   def all: IO[ErrorOr[Seq[Account]]]
 
   def balance(no: String): IO[ErrorOr[Balance]] = query(no).map {

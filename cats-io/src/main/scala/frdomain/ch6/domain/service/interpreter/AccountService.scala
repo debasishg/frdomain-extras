@@ -3,7 +3,7 @@ package domain
 package service
 package interpreter
 
-import java.util.{ Date, Calendar }
+import java.time.LocalDateTime
 
 import cats._
 import cats.data._
@@ -19,7 +19,7 @@ class AccountServiceInterpreter extends AccountService[Account, Amount, Balance]
   def open(no: String, 
            name: String, 
            rate: Option[BigDecimal],
-           openingDate: Option[Date],
+           openingDate: Option[LocalDateTime],
            accountType: AccountType) = Kleisli[Valid, AccountRepository, Account] { (repo: AccountRepository) =>
 
     EitherT {
@@ -53,7 +53,7 @@ class AccountServiceInterpreter extends AccountService[Account, Amount, Balance]
     }
   }
 
-  def close(no: String, closeDate: Option[Date]) = Kleisli[Valid, AccountRepository, Account] { (repo: AccountRepository) =>
+  def close(no: String, closeDate: Option[LocalDateTime]) = Kleisli[Valid, AccountRepository, Account] { (repo: AccountRepository) =>
     EitherT {
       repo.query(no).flatMap {
 

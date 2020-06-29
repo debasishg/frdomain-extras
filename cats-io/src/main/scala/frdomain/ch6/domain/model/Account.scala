@@ -2,7 +2,7 @@ package frdomain.ch6
 package domain
 package model
 
-import java.util.{ Date, Calendar }
+import java.time.LocalDateTime
 
 import cats._
 import cats.data._
@@ -16,16 +16,16 @@ case class Balance(amount: Amount = 0)
 sealed trait Account {
   def no: String
   def name: String
-  def dateOfOpen: Option[Date]
-  def dateOfClose: Option[Date]
+  def dateOfOpen: Option[LocalDateTime]
+  def dateOfClose: Option[LocalDateTime]
   def balance: Balance
 }
 
 final case class CheckingAccount (no: String, name: String,
-  dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = Balance()) extends Account
+  dateOfOpen: Option[LocalDateTime], dateOfClose: Option[LocalDateTime] = None, balance: Balance = Balance()) extends Account
 
 final case class SavingsAccount (no: String, name: String, rateOfInterest: Amount, 
-  dateOfOpen: Option[Date], dateOfClose: Option[Date] = None, balance: Balance = Balance()) extends Account
+  dateOfOpen: Option[LocalDateTime], dateOfClose: Option[LocalDateTime] = None, balance: Balance = Balance()) extends Account
 
 object Account {
 
@@ -33,8 +33,8 @@ object Account {
     if (no.isEmpty || no.size < 5) s"Account No has to be at least 5 characters long: found $no".invalidNec
     else no.validNec
 
-  private def validateOpenCloseDate(od: Date, cd: Option[Date]): ValidationResult[(Option[Date], Option[Date])] = cd.map { c => 
-    if (c before od) s"Close date [$c] cannot be earlier than open date [$od]".invalidNec
+  private def validateOpenCloseDate(od: LocalDateTime, cd: Option[LocalDateTime]): ValidationResult[(Option[LocalDateTime], Option[LocalDateTime])] = cd.map { c => 
+    if (c isBefore od) s"Close date [$c] cannot be earlier than open date [$od]".invalidNec
     else (od.some, cd).validNec
   }.getOrElse { (od.some, cd).validNec }
 
@@ -42,7 +42,7 @@ object Account {
     if (rate <= BigDecimal(0)) s"Interest rate $rate must be > 0".invalidNec
     else rate.validNec
 
-  def checkingAccount(no: String, name: String, openDate: Option[Date], closeDate: Option[Date], 
+  def checkingAccount(no: String, name: String, openDate: Option[LocalDateTime], closeDate: Option[LocalDateTime], 
     balance: Balance): ErrorOr[Account] = { 
 
     ( 
@@ -54,8 +54,8 @@ object Account {
     }.toEither
   }
 
-  def savingsAccount(no: String, name: String, rate: BigDecimal, openDate: Option[Date], 
-    closeDate: Option[Date], balance: Balance): ErrorOr[Account] = { 
+  def savingsAccount(no: String, name: String, rate: BigDecimal, openDate: Option[LocalDateTime], 
+    closeDate: Option[LocalDateTime], balance: Balance): ErrorOr[Account] = { 
 
     (
       validateAccountNo(no),
@@ -72,12 +72,12 @@ object Account {
     else a.validNec
   }
 
-  private def validateCloseDate(a: Account, cd: Date): ValidationResult[Date] = {
-    if (cd before a.dateOfOpen.get) s"Close date [$cd] cannot be earlier than open date [${a.dateOfOpen.get}]".invalidNec
+  private def validateCloseDate(a: Account, cd: LocalDateTime): ValidationResult[LocalDateTime] = {
+    if (cd isBefore a.dateOfOpen.get) s"Close date [$cd] cannot be earlier than open date [${a.dateOfOpen.get}]".invalidNec
     else cd.validNec
   }
 
-  def close(a: Account, closeDate: Date): ErrorOr[Account] = {
+  def close(a: Account, closeDate: LocalDateTime): ErrorOr[Account] = {
     (validateAccountAlreadyClosed(a), validateCloseDate(a, closeDate)).mapN {(acc, _) =>
       acc match {
         case c: CheckingAccount => c.copy(dateOfClose = Some(closeDate))
