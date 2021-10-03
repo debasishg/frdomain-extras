@@ -13,7 +13,7 @@ object Versions {
   val pureconfigVersion = "0.12.1"
   val doobieVersion = "0.8.8"
   val newtypeVersion = "0.4.3"
-  val refinedVersion = "0.9.14"
+  val refinedVersion = "0.9.27"
   val squantsVersion = "1.6.0"
   val skunkVersion = "0.0.11"
   val cirisVersion = "1.1.0"
