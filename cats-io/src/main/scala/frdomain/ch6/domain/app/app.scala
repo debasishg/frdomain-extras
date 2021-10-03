@@ -4,8 +4,7 @@ package app
 
 import cats._
 import cats.data._
-import cats.implicits._
-import cats.instances.all._
+import cats.syntax.all._
 
 import service.interpreter.{ AccountService, InterestPostingService, ReportingService }
 import repository.interpreter.AccountRepositoryInMemory

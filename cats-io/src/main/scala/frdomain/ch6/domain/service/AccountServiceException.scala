@@ -4,7 +4,6 @@ package service
 
 import cats._
 import cats.data._
-import cats.instances.all._
 
 trait AccountServiceException {
   def message: NonEmptyChain[String]

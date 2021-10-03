@@ -8,7 +8,6 @@ import scala.collection.mutable.{ Map => MMap }
 
 import cats._
 import cats.data._
-import cats.instances.all._
 import cats.effect.IO
 
 import common._
