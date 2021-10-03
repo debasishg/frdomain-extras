@@ -1,6 +1,6 @@
 object Versions {
   val catsVersion = "2.2.0-M2"
-  val catsEffectVersion = "2.1.3"
+  val catsEffectVersion = "2.1.4"
   val catsMtlVersion = "0.7.0"
   val macroParadiseVersion = "2.1.1"
   val kindProjectorVersion = "0.11.0"
