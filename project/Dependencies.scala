@@ -53,7 +53,7 @@ object Dependencies {
     val cirisRefined      = "is.cir"                       %% "ciris-refined"                    % cirisVersion
   }
 
-  val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "5.2.4"
+  val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "7.15.0"
 
   val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
