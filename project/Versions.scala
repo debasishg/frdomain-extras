@@ -15,6 +15,7 @@ object Versions {
   val zioVersion = "1.0.12"
   val zioLoggingVersion = "0.2.9"
   val silencerVersion = "1.4.4"
+<<<<<<< HEAD
   val pureconfigVersion = "0.12.3"
   val log4j2Version = "2.13.3"
   val doobieVersion = "0.13.4"
@@ -23,4 +24,14 @@ object Versions {
   val squantsVersion = "1.6.0"
   val skunkVersion = "0.0.28"
   val cirisVersion = "1.1.2"
+=======
+  val log4j2Version = "2.13.1"
+  val pureconfigVersion = "0.12.1"
+  val doobieVersion = "0.8.8"
+  val newtypeVersion = "0.4.3"
+  val refinedVersion = "0.9.14"
+  val squantsVersion = "1.8.3"
+  val skunkVersion = "0.0.11"
+  val cirisVersion = "1.1.0"
+>>>>>>> 3325ff7328e752687a7039060014c93cdb1346a1
 }
