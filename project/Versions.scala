@@ -1,7 +1,13 @@
 object Versions {
+<<<<<<< HEAD
   val catsVersion = "2.2.0"
   val catsEffectVersion = "2.1.4"
   val catsMtlVersion = "0.7.0"
+=======
+  val catsVersion = "2.2.0-M2"
+  val catsEffectVersion = "2.1.3"
+  val catsMtlVersion = "0.7.1"
+>>>>>>> 05b7152ee0100864445227b0a80c7c856ed2b55c
   val macroParadiseVersion = "2.1.1"
   val kindProjectorVersion = "0.13.2"
   val monixVersion = "3.2.2"
