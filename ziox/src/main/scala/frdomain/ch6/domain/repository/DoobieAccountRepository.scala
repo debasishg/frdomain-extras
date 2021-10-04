@@ -4,7 +4,6 @@ package repository
 import java.util.Date
 
 import cats.effect.Blocker
-import cats.implicits._
 
 import doobie._
 import doobie.free.connection

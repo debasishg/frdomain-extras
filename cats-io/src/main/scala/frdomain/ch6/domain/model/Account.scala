@@ -6,8 +6,7 @@ import java.time.LocalDateTime
 
 import cats._
 import cats.data._
-import cats.implicits._
-import cats.instances.all._
+import cats.syntax.all._
 
 import common._
 
