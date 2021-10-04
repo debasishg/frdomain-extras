@@ -16,5 +16,5 @@ object Versions {
   val refinedVersion = "0.9.27"
   val squantsVersion = "1.6.0"
   val skunkVersion = "0.0.11"
-  val cirisVersion = "1.1.0"
+  val cirisVersion = "1.1.2"
 }
