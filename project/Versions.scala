@@ -4,7 +4,7 @@ object Versions {
   val catsMtlVersion = "0.7.0"
   val macroParadiseVersion = "2.1.1"
   val kindProjectorVersion = "0.11.0"
-  val monixVersion = "3.2.1"
+  val monixVersion = "3.2.2"
   val scalaVersion = "2.13.2"
   val zioVersion = "1.0.12"
   val zioLoggingVersion = "0.2.9"
