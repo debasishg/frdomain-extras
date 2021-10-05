@@ -3,8 +3,6 @@ package repository
 
 import java.util.Date
 
-import cats.effect.kernel.Async
-
 import doobie._
 import doobie.free.connection
 import doobie.hikari._
@@ -59,44 +57,36 @@ final class DoobieAccountRepository(xa: Transactor[Task]) {
 object DoobieAccountRepository {
   def layer
     : ZLayer[Blocking with DbConfigProvider, Throwable, AccountRepository] = {
+    import zio.interop.catz.implicits._
 
-    def initDb(cfg: DBConfig): Task[Unit] =
-      Task {
-        Flyway
-          .configure()
-          .dataSource(cfg.url, cfg.user, cfg.password)
-          .load()
-          .migrate()
-      }.unit
+    implicit val zioRuntime: zio.Runtime[zio.ZEnv] = zio.Runtime.default
 
-    def mkTransactor[F[_]: Async](
-      cfg: DBConfig
-    ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] =
-      ZIO.runtime[Blocking].toManaged_.flatMap { implicit rt =>
-        for {
-          transactEC <- Managed.succeed(
-                         rt.environment
-                           .get[Blocking.Service]
-                           .blockingExecutor
-                           .asEC
-                       )
-          connectEC = rt.platform.executor.asEC
-          transactor <- HikariTransactor
-                         .newHikariTransactor[Task](
-                           cfg.driver,
-                           cfg.url,
-                           cfg.user,
-                           cfg.password,
-                           connectEC
-                         )
-                         .toManaged
-        } yield transactor
-      }
+    implicit val dispatcher: cats.effect.std.Dispatcher[zio.Task] =
+      zioRuntime.unsafeRun(
+        cats.effect.std
+          .Dispatcher[zio.Task]
+          .allocated
+      )
+      ._1
+
+    def mkTransactor(cfg: DBConfig): ZManaged[Blocking, Throwable, HikariTransactor[Task]] =
+      for {
+        rt <- ZIO.runtime[Any].toManaged_
+        xa <-
+          HikariTransactor
+            .newHikariTransactor[Task](
+              cfg.driver,
+              cfg.url,
+              cfg.user,
+              cfg.password,
+              rt.platform.executor.asEC 
+            )
+            .toManaged
+      } yield xa
 
     ZLayer.fromManaged {
       for {
         cfg        <- ZIO.access[DbConfigProvider](_.get).toManaged_
-        _          <- initDb(cfg).toManaged_
         transactor <- mkTransactor(cfg)
       } yield new DoobieAccountRepository(transactor).accountRepository
     }

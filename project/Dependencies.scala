@@ -26,7 +26,7 @@ object Dependencies {
     val zio               = "dev.zio"                      %% "zio"                              % zioVersion
     val ziotest           = "dev.zio"                      %% "zio-test"                         % zioVersion % "test"
     val ziotestsbt        = "dev.zio"                      %% "zio-test-sbt"                     % zioVersion % "test"
-    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % "2.1.4.1"
+    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % zioInteropCatsVersion
     val zioLogging        = "dev.zio"                      %% "zio-logging"                      % zioLoggingVersion
     val zioLoggingSlf4j   = "dev.zio"                      %% "zio-logging-slf4j"                % zioLoggingVersion
     val log4jAPI          = "org.apache.logging.log4j"      % "log4j-api"                        % log4j2Version
@@ -53,7 +53,7 @@ object Dependencies {
     val cirisRefined      = "is.cir"                       %% "ciris-refined"                    % cirisVersion
   }
 
-  val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "7.15.0"
+  val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % flywayDbVersion
 
   val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % Versions.kindProjectorVersion cross CrossVersion.full)
 

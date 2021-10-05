@@ -8,6 +8,8 @@ object Versions {
   val scalaVersion = "2.13.6"
   val zioVersion = "1.0.12"
   val zioLoggingVersion = "0.5.12"
+  // val zioInteropCatsVersion = "2.5.1.0"
+  val zioInteropCatsVersion = "3.1.1.0"
   val silencerVersion = "1.4.4"
   val pureconfigVersion = "0.17.0"
   val log4j2Version = "2.14.1"
@@ -17,4 +19,5 @@ object Versions {
   val squantsVersion = "1.8.3"
   val skunkVersion = "0.2.2"
   val cirisVersion = "2.1.1"
+  val flywayDbVersion = "7.15.0"
 }
