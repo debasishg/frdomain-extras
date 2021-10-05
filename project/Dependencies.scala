@@ -55,7 +55,7 @@ object Dependencies {
 
   val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "7.15.0"
 
-  val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)
+  val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % Versions.kindProjectorVersion cross CrossVersion.full)
 
   val commonDependencies: Seq[ModuleID] = Seq(Cats.cats, Cats.catsEffect)
   val monixDependencies: Seq[ModuleID] = Seq(Monix.monix)
