@@ -9,7 +9,7 @@ object Versions {
   val zioVersion = "1.0.12"
   val zioLoggingVersion = "0.2.9"
   val silencerVersion = "1.4.4"
-  val pureconfigVersion = "0.12.3"
+  val pureconfigVersion = "0.17.0"
   val log4j2Version = "2.13.3"
   val doobieVersion = "0.13.4"
   val newtypeVersion = "0.4.4"
