@@ -15,17 +15,18 @@ import model.Account
 import AccountService._
 import InterestPostingService._
 import ReportingService._
+import cats.effect._
 
-object App {
+object App extends IOApp.Simple {
 
-  def main(args: Array[String]): Unit = {
-    usecase1()
-    usecase2()
-    usecase3()
-    usecase4()
+  def run: IO[Unit] = {
+    usecase1() >> 
+      usecase2() >> 
+        usecase3() >> 
+          usecase4()
   }
 
-  def usecase1(): Unit = {
+  def usecase1(): IO[Unit] = {
     val opens = 
       for {
         _ <- open("a1234", "a1name", None, None, Checking)
@@ -51,14 +52,11 @@ object App {
   
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+    y.value.flatMap {
+      case Left(th) => IO.println(th.message)
+      case Right(vs) => IO(vs.foreach(println))
     }
-  
+
     // (a2345,2000)
     // (a5678,0)
     // (a3456,3000)
@@ -66,7 +64,7 @@ object App {
     // (a4567,4000)
   }
 
-  def usecase2(): Unit = {
+  def usecase2(): IO[Unit] = {
     val c = for {
       _ <- open("a1234", "a1name", None, None, Checking)
       _ <- credit("a2345", 2000)
@@ -75,17 +73,14 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+    y.value.flatMap {
+      case Left(th) => IO.println(th.message)
+      case Right(vs) => IO(vs.foreach(println))
     }
     // NonEmptyList(No existing account with no a2345)
   }
 
-  def usecase3(): Unit = {
+  def usecase3(): IO[Unit] = {
     val c = for {
       _ <- open("a1234", "a1name", None, None, Checking)
       _ <- credit("a1234", 2000)
@@ -95,17 +90,14 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+    y.value.flatMap {
+      case Left(th) => IO.println(th.message)
+      case Right(vs) => IO(vs.foreach(println))
     }
     // NonEmptyList(Insufficient amount in a1234 to debit)
   }
 
-  def usecase4(): Unit = {
+  def usecase4(): IO[Unit] = {
     val c = for {
       a <- open("a134", "a1name", Some(BigDecimal(-0.9)), None, Savings)
       _ <- credit(a.no, 2000)
@@ -115,12 +107,9 @@ object App {
 
     val y = c(new AccountRepositoryInMemory)
 
-    y.value.unsafeRunAsync { 
-      case Left(th) => th.printStackTrace
-      case Right(vs) => vs match {
-        case Left(asex) => println(asex.message)
-        case Right(vals) => vals.foreach(println)
-      }
+    y.value.flatMap {
+      case Left(th) => IO.println(th.message)
+      case Right(vs) => IO(vs.foreach(println))
     }
     // NonEmptyList(Account No has to be at least 5 characters long: found a134, Interest rate -0.9 must be > 0)
   }

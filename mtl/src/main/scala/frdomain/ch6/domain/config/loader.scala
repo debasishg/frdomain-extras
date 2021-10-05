@@ -14,7 +14,7 @@ import config._
 
 object load {
   
-  def apply[F[_]: Async: ContextShift]: F[AppConfig] =
+  def apply[F[_]: Async]: F[AppConfig] =
     env("BANKING_APP_ENV")
       .as[AppEnvironment]
       .default(Prod)
@@ -24,7 +24,7 @@ object load {
       }
       .load[F]
 
-  private def default: ConfigValue[AppConfig] =
+  private def default[F[_]]: ConfigValue[F, AppConfig] =
     (
       env("DATABASE_USER").as[NonEmptyString].default("postgres"),
       env("DATABASE_NAME").as[NonEmptyString].default("banking"),

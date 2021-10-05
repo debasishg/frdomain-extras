@@ -3,7 +3,7 @@ package repository
 
 import java.util.Date
 
-import cats.effect.Blocker
+import cats.effect.kernel.Async
 
 import doobie._
 import doobie.free.connection
@@ -69,7 +69,7 @@ object DoobieAccountRepository {
           .migrate()
       }.unit
 
-    def mkTransactor(
+    def mkTransactor[F[_]: Async](
       cfg: DBConfig
     ): ZManaged[Blocking, Throwable, HikariTransactor[Task]] =
       ZIO.runtime[Blocking].toManaged_.flatMap { implicit rt =>
@@ -87,8 +87,7 @@ object DoobieAccountRepository {
                            cfg.url,
                            cfg.user,
                            cfg.password,
-                           connectEC,
-                           Blocker.liftExecutionContext(transactEC)
+                           connectEC
                          )
                          .toManaged
         } yield transactor

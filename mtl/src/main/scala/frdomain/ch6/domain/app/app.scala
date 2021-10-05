@@ -10,7 +10,7 @@ import cats.data._
 import cats.implicits._
 import cats.instances.all._
 import cats.effect.IO
-import cats.effect.concurrent.Ref
+import cats.effect.Ref
 import cats.mtl._
 
 import squants.market._
@@ -22,14 +22,14 @@ import repository.AccountRepository
 import repository.interpreter.AccountRepositoryInMemory
 import service.{ ReportingService, AccountService }
 import service.interpreter._
+import cats.effect._
 
-object App {
+object App extends IOApp.Simple {
 
-  def main(args: Array[String]): Unit = {
-    List(UseCase1(), UseCase2(), UseCase3(), UseCase4()).foreach {
-      _.unsafeRunAsync { 
-        case Left(th) => println(th.getMessage)
-        case Right(vs) => println(vs) 
+  def run: IO[Unit] = {
+    IO {
+      List(UseCase1(), UseCase2(), UseCase3(), UseCase4()).foreach {
+        _.flatMap { vals => IO(vals.foreach(println)) }
       }
     }
 

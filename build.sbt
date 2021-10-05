@@ -1,10 +1,10 @@
 name := "frdomain-extras"
 
 // global settings for this build
-version in ThisBuild := "0.0.1"
-organization in ThisBuild := "frdomain"
-scalaVersion in ThisBuild := Versions.scalaVersion
-
+ThisBuild / version := "0.0.1"
+ThisBuild / organization := "frdomain"
+ThisBuild / scalaVersion := Versions.scalaVersion
+ThisBuild / evictionErrorLevel := Level.Warn
 
 lazy val catsio = (project in file("./cats-io"))
   .settings(Common.settings: _*)

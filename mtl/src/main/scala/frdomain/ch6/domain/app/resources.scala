@@ -4,7 +4,10 @@ package io
 package app
 
 import cats.effect._
-import cats.implicits._
+import cats.syntax.all._
+import cats.effect.std.Console
+
+import fs2.io.net.Network
 
 import skunk._
 import skunk.util.Typer
@@ -18,7 +21,7 @@ final case class AppResources[F[_]](
 
 object AppResources {
 
-  def make[F[_]: ConcurrentEffect: ContextShift](
+  def make[F[_]: Concurrent: Network: Console](
       cfg: AppConfig
   ): Resource[F, AppResources[F]] = {
 

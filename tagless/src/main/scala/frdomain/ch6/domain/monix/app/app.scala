@@ -5,7 +5,7 @@ package app
 
 import cats._
 import cats.data._
-import cats.implicits._
+import cats.syntax.all._
 import cats.instances.all._
 
 import service.AccountServiceException
@@ -25,7 +25,6 @@ object App {
   import scala.concurrent.duration.Duration
 
   import scala.util.{ Success, Failure }
- 
 
   val accountServiceTask = new AccountServiceInterpreter[Task]
   val interestPostingServiceTask = new InterestPostingServiceInterpreter[Task]

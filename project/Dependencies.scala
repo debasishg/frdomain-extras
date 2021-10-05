@@ -61,7 +61,7 @@ object Dependencies {
   val monixDependencies: Seq[ModuleID] = Seq(Monix.monix)
 
   val catsIODependencies: Seq[ModuleID] = commonDependencies
-  val taglessDependencies: Seq[ModuleID] = commonDependencies ++ Seq(kindProjector) ++ monixDependencies
+  val taglessDependencies: Seq[ModuleID] = Seq(kindProjector) ++ monixDependencies
 
   val catsMtlDependencies: Seq[ModuleID] = 
     commonDependencies ++ Seq(Cats.catsMtl) ++ Seq(kindProjector) ++ monixDependencies ++ Seq(Misc.newtype, Misc.refinedCore, Misc.refinedCats, Misc.squants) ++ Seq(Skunk.skunkCore, Skunk.skunkCirce) ++ Seq(Ciris.cirisCore, Ciris.cirisEnum, Ciris.cirisRefined)

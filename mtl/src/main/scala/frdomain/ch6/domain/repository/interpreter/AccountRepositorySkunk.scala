@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 
 import cats.implicits._
 import cats.effect._
-import cats.effect.concurrent.Ref
+import cats.effect.Ref
 
 import skunk._
 import skunk.data.Type
