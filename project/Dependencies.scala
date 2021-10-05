@@ -26,7 +26,7 @@ object Dependencies {
     val zio               = "dev.zio"                      %% "zio"                              % zioVersion
     val ziotest           = "dev.zio"                      %% "zio-test"                         % zioVersion % "test"
     val ziotestsbt        = "dev.zio"                      %% "zio-test-sbt"                     % zioVersion % "test"
-    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % "2.1.3.0-RC16"
+    val zioInteropCats    = "dev.zio"                      %% "zio-interop-cats"                 % "2.1.4.1"
     val zioLogging        = "dev.zio"                      %% "zio-logging"                      % zioLoggingVersion
     val zioLoggingSlf4j   = "dev.zio"                      %% "zio-logging-slf4j"                % zioLoggingVersion
     val log4jAPI          = "org.apache.logging.log4j"      % "log4j-api"                        % log4j2Version
@@ -55,7 +55,7 @@ object Dependencies {
 
   val flywayDb            = "org.flywaydb"                  % "flyway-core"                      % "7.15.0"
 
-  val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)
+  val kindProjector = compilerPlugin("org.typelevel" %% "kind-projector" % Versions.kindProjectorVersion cross CrossVersion.full)
 
   val commonDependencies: Seq[ModuleID] = Seq(Cats.cats, Cats.catsEffect)
   val monixDependencies: Seq[ModuleID] = Seq(Monix.monix)
