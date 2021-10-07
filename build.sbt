@@ -11,8 +11,8 @@ lazy val catsio = (project in file("./cats-io"))
   .settings(libraryDependencies ++= Dependencies.catsIODependencies)
 
   .settings (
-    fork in run := true,
-    mainClass in Compile := Some("frdomain.ch6.domain.app.App"),
+    run / fork := true,
+    Compile / mainClass := Some("frdomain.ch6.domain.app.App"),
     addCommandAlias("catsio", "catsio/run")
   )
 
@@ -21,8 +21,8 @@ lazy val tagless = (project in file("./tagless"))
   .settings(libraryDependencies ++= Dependencies.taglessDependencies)
 
   .settings (
-    fork in run := true,
-    mainClass in Compile := Some("frdomain.ch6.domain.monixtask.app.App"),
+    run / fork := true,
+    Compile / mainClass := Some("frdomain.ch6.domain.monixtask.app.App"),
     addCommandAlias("tagless", "tagless/run")
   )
 
@@ -32,8 +32,8 @@ lazy val mtl = (project in file("./mtl"))
   .settings(scalacOptions += "-Ymacro-annotations")
 
   .settings (
-    fork in run := true,
-    mainClass in Compile := Some("frdomain.ch6.domain.io.app.Main"),
+    run / fork := true,
+    Compile / mainClass := Some("frdomain.ch6.domain.io.app.Main"),
     addCommandAlias("mtl", "mtl/run")
   )
 
@@ -42,7 +42,7 @@ lazy val ziox = (project in file("./ziox"))
   .settings(libraryDependencies ++= Dependencies.zioDependencies)
 
   .settings (
-    fork in run := true,
+    run / fork := true,
     addCommandAlias("ziox", "ziox/run")
   )
 
