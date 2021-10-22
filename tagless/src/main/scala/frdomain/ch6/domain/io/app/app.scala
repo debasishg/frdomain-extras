@@ -3,6 +3,7 @@ package domain
 package io
 package app
 
+import scala.util.{ Success, Failure }
 import cats._
 import cats.data._
 import cats.syntax.all._
@@ -59,7 +60,28 @@ object App extends IOApp.Simple {
     } yield a
   
     val y = c(new AccountRepositoryInMemory[IO])
+
+    // normal sequential bind
     y.flatMap { vals => IO(vals.foreach(println)) }
+
+    // produces an IO reference that should execute the source on evaluation
+    // Note: this is just the description of the computation, which gets executed
+    // on `unsafeRunSync`
+    val start = y.runAsync {
+      case Left(th) => IO(th.printStackTrace)
+      case Right(ls) => IO(ls.foreach(println))
+    }
+    start.unsafeRunSync()
+
+    // evaluates the effect and produces the result into a `Future`
+    val f = y.unsafeToFuture()
+
+    implicit val ec: scala.concurrent.ExecutionContext = scala.concurrent.ExecutionContext.global
+    f.onComplete {
+      case Failure(th) => th.printStackTrace
+      case Success(ls) => ls.foreach(println)
+    }
+    IO(())
 
     // (a2345,2000)
     // (a5678,0)
