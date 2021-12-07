@@ -18,5 +18,5 @@ object Versions {
   val squantsVersion = "1.8.3"
   val skunkVersion = "0.2.2"
   val cirisVersion = "2.3.1"
-  val flywayDbVersion = "8.2.0"
+  val flywayDbVersion = "8.2.1"
 }
