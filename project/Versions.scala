@@ -7,7 +7,7 @@ object Versions {
   val monixVersion = "3.4.0"
   val scalaVersion = "2.13.8"
   val zioVersion = "1.0.13"
-  val zioLoggingVersion = "0.5.14"
+  val zioLoggingVersion = "2.1.1"
   val zioInteropCatsVersion = "3.2.9.0"
   val silencerVersion = "1.4.4"
   val pureconfigVersion = "0.17.1"
